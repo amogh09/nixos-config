@@ -144,7 +144,7 @@
   system.stateVersion = "22.11"; # Did you read the comment?
 
   home-manager.users.amogh =
-    (import ./home.nix) { config = config; pkgs = pkgs; };
+    (import ./common-home.nix) { config = config; pkgs = pkgs; };
 
   # Samba Server
   services.samba-wsdd.enable = true; # make shares visible for windows 10 clients
