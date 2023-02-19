@@ -1,10 +1,10 @@
 { config, pkgs, ... }:
 
 let
-  x = (import ./common-home.nix) { config = config; pkgs = pkgs; };
+  common = (import ./common-home.nix) { config = config; pkgs = pkgs; };
 in
-  x //
+  common //
   {
-    home = x.home // { username = "home"; homeDirectory = "/Users/home"; };
-    programs = x.programs // { home-manager = { enable = true; }; };
+    home = common.home // { username = "home"; homeDirectory = "/Users/home"; };
+    programs = common.programs // { home-manager = { enable = true; }; };
   }
