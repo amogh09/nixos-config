@@ -26,6 +26,7 @@
         p.haskell
         p.nix
         p.json
+        p.lua
       ]))
 
       vim-unimpaired # Helpful keybindings
