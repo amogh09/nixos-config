@@ -5,6 +5,11 @@ let
 in
   common //
   {
-    home = common.home // { username = "home"; homeDirectory = "/Users/home"; };
+    home = common.home;
+      # Uncomment the following and update the values
+      # //
+      # { username = "amogh";             # Change this to actual username
+      #   homeDirectory = "/home/amogh";  # Change this to actual home dir
+      # };
     programs = common.programs // { home-manager = { enable = true; }; };
   }
