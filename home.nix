@@ -2,14 +2,11 @@
 
 let
   common = (import ./common-home.nix) { config = config; pkgs = pkgs; };
+  username = builtins.getEnv "USER";
+  homeDir = builtins.getEnv "HOME";
 in
   common //
   {
-    home = common.home;
-      # Uncomment the following and update the values
-      # //
-      # { username = "amogh";             # Change this to actual username
-      #   homeDirectory = "/home/amogh";  # Change this to actual home dir
-      # };
+    home = common.home // { username = username; homeDirectory = homeDir; };
     programs = common.programs // { home-manager = { enable = true; }; };
   }
