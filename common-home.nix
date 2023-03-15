@@ -55,18 +55,10 @@
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
-    plugins = with pkgs; [
-      {
-        name = "agkozak-zsh-prompt";
-        src = fetchFromGitHub {
-          owner = "agkozak";
-          repo = "agkozak-zsh-prompt";
-          rev = "v3.11.1";
-          sha256 = "1rl0bqmflz7c1n6j6n4677x6kscc160s6zd5his8bf1m3idw1rsc";
-        };
-        file = "agkozak-zsh-prompt.plugin.zsh";
-      }
-    ];
+    initExtra =
+    ''
+    PS1='%F{#7fc3c0}%m %F{#cfb845}❯ '
+    '';
     enableAutosuggestions = true;
     enableSyntaxHighlighting = true;
     historySubstringSearch = {
