@@ -105,5 +105,6 @@
     nodePackages_latest.vscode-langservers-extracted
     jq
     htop
+    qbittorrent
   ];
 }
