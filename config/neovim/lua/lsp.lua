@@ -67,6 +67,12 @@ require'lspconfig'.jsonls.setup {
 	on_attach = on_attach
 }
 
+-- Typescript language server
+require'lspconfig'.tsserver.setup {
+    capabilities = capabilities,
+    on_attach = on_attach
+}
+
 -- luasnip setup
 local luasnip = require 'luasnip'
 

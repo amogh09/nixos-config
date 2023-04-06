@@ -56,14 +56,11 @@
     enable = true;
     dotDir = ".config/zsh";
     initExtra =
-    ''
-    PS1='%F{#7fc3c0}%m %F{#cfb845}❯ '
-    '';
+      ''
+        PS1='%F{#7fc3c0}%m %F{#cfb845}❯ '
+      '';
     enableAutosuggestions = true;
     enableSyntaxHighlighting = true;
-    historySubstringSearch = {
-      enable = true;
-    };
     shellAliases = {
       ll = "ls -la";
       gst = "git status";
@@ -79,6 +76,10 @@
       ggp = "git push origin";
       ggl = "git pull origin";
     };
+  };
+
+  programs.fzf = {
+    enable = true;
   };
 
   editorconfig = {
@@ -97,7 +98,6 @@
 
   home.packages = with pkgs; [
     tree
-    fzf
     bat
     neovim-remote
     ripgrep
@@ -106,5 +106,7 @@
     jq
     htop
     qbittorrent
+    curl
+    unixtools.netstat
   ];
 }
