@@ -58,6 +58,10 @@
     initExtra =
       ''
         PS1='%F{#7fc3c0}%m %F{#cfb845}❯ '
+
+        autoload -U edit-command-line
+        zle -N edit-command-line
+        bindkey '^Xe' edit-command-line
       '';
     enableAutosuggestions = false;
     historySubstringSearch = {
