@@ -51,6 +51,13 @@ require'lspconfig'.gopls.setup {
 
 -- Setup Haskell Language Server
 require'lspconfig'.hls.setup{
+    filetypes = { 'haskell', 'lhaskell', 'cabal' },
+    settings = {
+        haskell = {
+            cabalFormattingProvider = "cabalfmt",
+            formattingProvider = "ormolu"
+        }
+    },
 	capabilities = capabilities,
 	on_attach = on_attach
 }

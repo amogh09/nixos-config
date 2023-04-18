@@ -121,4 +121,4 @@ vim.api.nvim_set_keymap("i", "<Leader><Tab>", 'copilot#Accept("<CR>")', { silent
 vim.g.copilot_no_tab_map = true
 
 -- Set up FZF
-vim.env.FZF_DEFAULT_COMMAND = 'rg --files'
+vim.env.FZF_DEFAULT_COMMAND = 'rg --files --ignore-file .rgignore'
