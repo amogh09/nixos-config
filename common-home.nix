@@ -59,8 +59,10 @@
       ''
         PS1='%F{#7fc3c0}%m %F{#cfb845}❯ '
       '';
-    enableAutosuggestions = true;
-    enableSyntaxHighlighting = true;
+    enableAutosuggestions = false;
+    historySubstringSearch = {
+      enable = true;
+    };
     shellAliases = {
       ll = "ls -la";
       gst = "git status";
