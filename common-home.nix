@@ -41,6 +41,7 @@
       vim-commentary # For commenting code
       vim-devicons # icons!!
       copilot-vim # Github copilot
+      taboo-vim # Tab management
     ];
   };
 
