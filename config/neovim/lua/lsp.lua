@@ -32,7 +32,7 @@ local on_attach = function(client, bufnr)
 
 	-- Format before writing
 	vim.api.nvim_create_autocmd({"BufWritePre"}, {
-		pattern = {"*.go", "*.hs", "*.cabal", "*.js"},
+		pattern = {"*.go", "*.hs", "*.js"},
 		callback = function()
             vim.lsp.buf.format { async = false }
         end, opts,
