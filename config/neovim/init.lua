@@ -41,6 +41,9 @@ vim.keymap.set('n', '<M-[>', ':tabprevious<CR>')
 vim.keymap.set('t', '<M-]>', '<c-\\><c-n>:tabnext<CR>')
 vim.keymap.set('t', '<M-[>', '<c-\\><c-n>:tabprevious<CR>')
 
+-- Enable saving Taboo tab names to Session.vim
+vim.o.sessionoptions = vim.o.sessionoptions .. ",tabpages,globals"
+
 -- Mute search highlighting
 vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 
