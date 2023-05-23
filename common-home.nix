@@ -58,7 +58,7 @@
     dotDir = ".config/zsh";
     initExtra =
       ''
-        PS1='%F{#7fc3c0}%m %F{#cfb845}~ '
+        PS1='%F{#ffcc00}%m%f %F{#ff2052}%{%G%}%f '
 
         autoload -U edit-command-line
         zle -N edit-command-line
