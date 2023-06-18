@@ -58,15 +58,24 @@
     dotDir = ".config/zsh";
     initExtra =
       ''
-        PS1='%F{#ffcc00}%m%f %F{#ff2052}%{%G❱%}%f '
-
-        autoload -U edit-command-line
-        zle -N edit-command-line
-        bindkey '^Xe' edit-command-line
-
-        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-          . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+      set_ps1() {
+        local exit_status="$?"
+        if [[ $exit_status -eq 0 ]]; then
+          PS1='%F{#fadfad}%m%f %F{#20ff5e}%{%G❱%}%f '
+        else
+          PS1='%F{#fadfad}%m%f %F{#ff063e}%{%G❱%}%f '
         fi
+      }
+
+      precmd_functions+=(set_ps1)
+
+      autoload -U edit-command-line
+      zle -N edit-command-line
+      bindkey '^Xe' edit-command-line
+
+      if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+        . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+      fi
       '';
     enableAutosuggestions = true;
     historySubstringSearch = {
