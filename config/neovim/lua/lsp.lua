@@ -84,6 +84,12 @@ require'lspconfig'.tsserver.setup {
     on_attach = on_attach
 }
 
+-- Rust language server
+require'lspconfig'.rust_analyzer.setup{
+    capabilities = capabilities,
+    on_attach = on_attach
+}
+
 -- luasnip setup
 local luasnip = require 'luasnip'
 
