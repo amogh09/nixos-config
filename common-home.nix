@@ -36,6 +36,8 @@
       vim-gitgutter # For git
       vim-surround # Surround text with stuff
       tokyonight-nvim # Theme
+      neon # Theme
+      sonokai # Theme
       editorconfig-vim # editorconfig
       vim-obsession # For tracking vim sessions
       vim-commentary # For commenting code

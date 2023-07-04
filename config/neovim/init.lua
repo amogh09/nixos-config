@@ -35,6 +35,8 @@ vim.keymap.set('t', '<M-h>', '<c-\\><c-n><c-w>h')
 
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>') -- Esc to get out of terminal mode
 
+vim.o.termguicolors=true -- Enable true colors
+
 -- Working with tabs
 vim.keymap.set('n', '<M-]>', ':tabnext<CR>')
 vim.keymap.set('n', '<M-[>', ':tabprevious<CR>')
@@ -54,7 +56,9 @@ if has('nvim') && executable('nvr')
 endif
 
 " Colorscheme
-silent! colorscheme tokyonight
+let g:sonokai_style = 'andromeda'
+let g:sonokai_better_performance = 1
+silent! colorscheme sonokai
 
 " Prevent nesting of neovim instances
 if has('nvim') && executable('nvr')
