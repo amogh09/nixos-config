@@ -72,12 +72,6 @@ vim.api.nvim_create_autocmd(
 	{ pattern = { "qf" }, command = [[nnoremap <buffer><silent> q :close<CR>]] }
 )
 
--- Remove trailing whitespace on save
-vim.api.nvim_create_autocmd( "BufWritePre", {
-	pattern = { "*.py", "*.lua", "*.zshrc" },
-	command = [[ :%s/\s\+$//e ]],
-})
-
 -- Check if file exists
 function file_exists(file)
   local f = io.open(file, "rb")
