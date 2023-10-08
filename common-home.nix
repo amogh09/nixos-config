@@ -133,5 +133,6 @@
     curl
     unixtools.netstat
     fd
+    lua-language-server
   ];
 }
