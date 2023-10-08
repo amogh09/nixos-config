@@ -10,6 +10,13 @@ vim.opt.foldenable=false -- Don't fold by default
 vim.opt.spell=false -- Enable built-in spell-checker
 vim.cmd[[au TermOpen * setlocal nospell]] -- Disable spell-checker in terminal mode
 
+-- Telescope setup
+local telescope = require('telescope.builtin')
+vim.keymap.set('n', '<space>ff', telescope.find_files, {})
+vim.keymap.set('n', '<space>fg', telescope.live_grep, {})
+vim.keymap.set('n', '<space>fb', telescope.buffers, {})
+vim.keymap.set('n', '<space>fh', telescope.help_tags, {})
+
 -- Newline in normal mode
 vim.keymap.set('n', '<Leader>o', 'o<Esc>')
 vim.keymap.set('n', '<Leader>O', 'O<Esc>')

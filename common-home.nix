@@ -27,6 +27,7 @@
         p.nix
         p.json
         p.lua
+        p.bash
       ]))
 
       vim-unimpaired # Helpful keybindings
@@ -44,6 +45,7 @@
       vim-devicons # icons!!
       copilot-vim # Github copilot
       taboo-vim # Tab management
+      telescope-nvim
     ];
   };
 
@@ -60,24 +62,24 @@
     dotDir = ".config/zsh";
     initExtra =
       ''
-      set_ps1() {
-        local exit_status="$?"
-        if [[ $exit_status -eq 0 ]]; then
-          PS1='%F{#fadfad}%m%f %F{#20ff5e}%{%G❱%}%f '
-        else
-          PS1='%F{#fadfad}%m%f %F{#ff063e}%{%G❱%}%f '
+        set_ps1() {
+          local exit_status="$?"
+          if [[ $exit_status -eq 0 ]]; then
+            PS1='%F{#fadfad}%m%f %F{#20ff5e}%{%G❱%}%f '
+          else
+            PS1='%F{#fadfad}%m%f %F{#ff063e}%{%G❱%}%f '
+          fi
+        }
+
+        precmd_functions+=(set_ps1)
+
+        autoload -U edit-command-line
+        zle -N edit-command-line
+        bindkey '^Xe' edit-command-line
+
+        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+          . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
         fi
-      }
-
-      precmd_functions+=(set_ps1)
-
-      autoload -U edit-command-line
-      zle -N edit-command-line
-      bindkey '^Xe' edit-command-line
-
-      if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-        . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-      fi
       '';
     enableAutosuggestions = true;
     historySubstringSearch = {
@@ -111,7 +113,7 @@
         charset = "utf-8";
         end_of_line = "lf";
         trim_trailing_whitespace = true;
-        insert_final_newline = true;
+        insert_final_newline = false;
         indent_style = "space";
         indent_size = 4;
       };
@@ -130,5 +132,6 @@
     qbittorrent
     curl
     unixtools.netstat
+    fd
   ];
 }
