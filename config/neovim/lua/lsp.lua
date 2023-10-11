@@ -26,11 +26,9 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<space>ce', vim.lsp.codelens.run, bufopts)
     vim.keymap.set('n', '<space>cr', vim.lsp.codelens.refresh, bufopts)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-    vim.keymap.set('n', '<space>fm', function()
+    vim.keymap.set('n', '<space>f', function()
         vim.lsp.buf.format { async = true }
     end, bufopts)
-    vim.keymap.set('n', '<space>s', vim.lsp.buf.workspace_symbol, bufopts)
-    vim.keymap.set('n', '<space>ic', vim.lsp.buf.incoming_calls, bufopts)
 
     -- Format before writing
     vim.api.nvim_create_autocmd({ "BufWritePre" }, {
@@ -70,7 +68,7 @@ require 'lspconfig'.hls.setup {
 }
 
 -- Nix Language Server
-require 'lspconfig'.rnix.setup {
+require 'lspconfig'.nixd.setup {
     capabilities = capabilities,
     on_attach = on_attach
 }
@@ -92,9 +90,6 @@ require 'lspconfig'.rust_analyzer.setup {
     capabilities = capabilities,
     on_attach = on_attach
 }
-
--- luasnip setup
-local luasnip = require 'luasnip'
 
 -- Setup Lua LS
 require 'lspconfig'.lua_ls.setup {
@@ -129,6 +124,9 @@ require 'lspconfig'.lua_ls.setup {
         return true
     end
 }
+
+-- luasnip setup
+local luasnip = require 'luasnip'
 
 -- nvim-cmp setup
 local cmp = require 'cmp'

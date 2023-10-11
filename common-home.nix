@@ -31,7 +31,6 @@
       ]))
 
       vim-unimpaired # Helpful keybindings
-      fzf-vim # For fzf search
       vim-airline
       pear-tree # Automatic pairing of brackets
       vim-gitgutter # For git
@@ -134,5 +133,6 @@
     unixtools.netstat
     fd
     lua-language-server
+    nixd
   ];
 }
