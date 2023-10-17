@@ -81,6 +81,7 @@
         fi
       '';
     enableAutosuggestions = true;
+    enableSyntaxHighlighting = true;
     historySubstringSearch = {
       enable = true;
     };
