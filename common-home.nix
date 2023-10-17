@@ -81,7 +81,9 @@
         fi
       '';
     enableAutosuggestions = true;
-    enableSyntaxHighlighting = true;
+    syntaxHighlighting = {
+      enable = true;
+    };
     historySubstringSearch = {
       enable = true;
     };
