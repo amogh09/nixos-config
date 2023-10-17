@@ -44,6 +44,7 @@
       vim-devicons # icons!!
       taboo-vim # Tab management
       telescope-nvim
+      vim-test
     ];
   };
 

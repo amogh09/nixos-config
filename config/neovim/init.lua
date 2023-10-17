@@ -69,6 +69,12 @@ vim.o.sessionoptions = vim.o.sessionoptions .. ",tabpages,globals"
 -- Mute search highlighting
 vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 
+-- vim-test
+vim.cmd([[let test#strategy = "neovim"]])
+vim.keymap.set('n', '<space>t', ':TestNearest<CR>')
+vim.keymap.set('n', '<space>T', ':TestFile<CR>')
+vim.keymap.set('n', '<space>l', ':TestLast<CR>')
+
 vim.cmd([[
 " Set nvim as preferred editor for Git
 if has('nvim') && executable('nvr')
