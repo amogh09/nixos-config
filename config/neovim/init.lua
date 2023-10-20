@@ -21,6 +21,8 @@ vim.keymap.set('n', '<space>s', builtins.lsp_dynamic_workspace_symbols, {})
 vim.keymap.set('n', '<space>y', builtins.lsp_document_symbols, {})
 vim.keymap.set('n', '<space>ic', builtins.lsp_incoming_calls, {})
 vim.keymap.set('n', '<space>oc', builtins.lsp_outgoing_calls, {})
+vim.keymap.set('n', 'gr', builtins.lsp_references, {})
+vim.keymap.set('n', 'gi', builtins.lsp_implementations, {})
 require('telescope').setup {
   defaults = {
     mappings = {

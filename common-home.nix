@@ -137,5 +137,6 @@
     fd
     lua-language-server
     nixd
+    wget
   ];
 }
