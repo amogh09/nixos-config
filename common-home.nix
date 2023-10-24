@@ -54,6 +54,7 @@
     enable = true;
     userName = "Amogh Rathore";
     userEmail = "amoghdroid09@gmail.com";
+    ignores = [ ".envrc" ".direnv/" "Session.vim" ];
   };
 
   programs.zsh = {
@@ -118,6 +119,9 @@
         insert_final_newline = false;
         indent_style = "space";
         indent_size = 4;
+      };
+      "*.lua,*.nix" = {
+        indent_size = 2;
       };
     };
   };
