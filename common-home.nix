@@ -135,12 +135,12 @@
     nodePackages_latest.vscode-langservers-extracted
     jq
     htop
-    qbittorrent
     curl
     unixtools.netstat
     fd
     lua-language-server
     nixd
     wget
+    tmux
   ];
 }
