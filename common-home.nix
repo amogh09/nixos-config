@@ -82,6 +82,7 @@
         fi
       '';
     enableAutosuggestions = true;
+    defaultKeymap = "emacs";
     syntaxHighlighting = {
       enable = true;
     };
