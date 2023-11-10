@@ -121,7 +121,7 @@
         indent_style = "space";
         indent_size = 4;
       };
-      "*.lua,*.nix" = {
+      "*.{lua,nix}" = {
         indent_size = 2;
       };
     };
