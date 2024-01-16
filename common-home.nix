@@ -124,7 +124,15 @@
       "*.{lua,nix}" = {
         indent_size = 2;
       };
+      "makefile" = {
+        indent_style = "tab";
+      };
     };
+  };
+
+  programs.tmux = {
+    enable = true;
+    keyMode = "vi";
   };
 
   home.packages = with pkgs; [
