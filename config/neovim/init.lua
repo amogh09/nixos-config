@@ -151,3 +151,18 @@ vim.g.copilot_no_tab_map = true
 
 -- Set up FZF
 vim.env.FZF_DEFAULT_COMMAND = 'rg --files --ignore-file .rgignore'
+
+-- Set sh file type based on shebang.
+function CheckAndSetFileType()
+  -- Get the first line of the buffer
+  local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1]
+
+  -- Check if the first line matches the shebang pattern
+  if first_line and first_line:match("^#!.*/bin/bash") then
+    -- Set file type to sh
+    vim.api.nvim_buf_set_option(0, 'filetype', 'sh')
+  end
+end
+
+-- Call the function when the buffer is opened
+vim.api.nvim_command('autocmd BufReadPost * lua CheckAndSetFileType()')

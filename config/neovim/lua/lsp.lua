@@ -51,6 +51,12 @@ require 'lspconfig'.gopls.setup {
   }
 }
 
+-- Bash Language Server
+require'lspconfig'.bashls.setup{
+  capabilities = capabilities,
+  on_attach = on_attach
+}
+
 -- Setup Haskell Language Server
 require 'lspconfig'.hls.setup {
   filetypes = { 'haskell', 'lhaskell', 'cabal' },
