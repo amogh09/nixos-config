@@ -6,6 +6,8 @@
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
+  targets.genericLinux.enable = true;
+
   programs.neovim = {
     enable = true;
     defaultEditor = true;
