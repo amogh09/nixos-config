@@ -81,7 +81,7 @@
           . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
         fi
       '';
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     defaultKeymap = "emacs";
     syntaxHighlighting = {
       enable = true;
@@ -140,7 +140,6 @@
     bat
     neovim-remote
     ripgrep
-    rnix-lsp
     nodePackages_latest.vscode-langservers-extracted
     jq
     htop
