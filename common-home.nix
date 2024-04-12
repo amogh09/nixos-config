@@ -152,5 +152,6 @@
     nixd
     wget
     tmux
+    shellcheck
   ];
 }
