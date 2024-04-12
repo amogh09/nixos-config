@@ -124,6 +124,7 @@
       };
       "makefile" = {
         indent_style = "tab";
+        indent_size = 4;
       };
     };
   };
