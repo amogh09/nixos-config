@@ -78,10 +78,6 @@
         autoload -U edit-command-line
         zle -N edit-command-line
         bindkey '^Xe' edit-command-line
-
-        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-          . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-        fi
       '';
     autosuggestion.enable = true;
     defaultKeymap = "emacs";
@@ -153,5 +149,6 @@
     wget
     tmux
     shellcheck
+    gnumake
   ];
 }
