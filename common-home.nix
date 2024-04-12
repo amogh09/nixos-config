@@ -61,7 +61,6 @@
 
   programs.zsh = {
     enable = true;
-    dotDir = ".config/zsh";
     initExtra =
       ''
         set_ps1() {
