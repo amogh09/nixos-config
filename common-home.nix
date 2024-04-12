@@ -121,7 +121,7 @@
       "*.{lua,nix}" = {
         indent_size = 2;
       };
-      "makefile" = {
+      "Makefile" = {
         indent_style = "tab";
         indent_size = 4;
       };
