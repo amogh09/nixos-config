@@ -151,5 +151,6 @@
     tmux
     shellcheck
     gnumake
+    netcat
   ];
 }
