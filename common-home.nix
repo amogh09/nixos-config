@@ -100,6 +100,7 @@
       glo = "git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
       ggp = "git push origin";
       ggl = "git pull origin";
+      gb = "git branch";
     };
   };
 
