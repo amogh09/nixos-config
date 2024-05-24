@@ -94,6 +94,11 @@ require 'lspconfig'.rust_analyzer.setup {
   on_attach = on_attach
 }
 
+require 'lspconfig'.yamlls.setup {
+  capabilities = capabilities,
+  on_attach = on_attach
+}
+
 -- Setup Lua LS
 require 'lspconfig'.lua_ls.setup {
   capabilities = capabilities,
