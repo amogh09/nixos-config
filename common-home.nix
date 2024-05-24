@@ -153,5 +153,6 @@
     shellcheck
     gnumake
     netcat
+    yaml-language-server
   ];
 }
