@@ -78,7 +78,7 @@
         zle -N edit-command-line
         bindkey '^Xe' edit-command-line
       '';
-    autosuggestion.enable = true;
+    enableAutosuggestions = true;
     defaultKeymap = "emacs";
     syntaxHighlighting = {
       enable = true;
