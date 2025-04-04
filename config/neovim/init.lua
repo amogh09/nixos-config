@@ -32,6 +32,7 @@ require('telescope').setup {
     },
   },
 }
+require('telescope').load_extension('fzf')
 
 -- Newline in normal mode
 vim.keymap.set('n', '<Leader>o', 'o<Esc>')
