@@ -47,6 +47,7 @@ require 'lspconfig'.gopls.setup {
   settings = {
     gopls = {
       buildFlags = { "-tags=unit,integration,functional,linux" },
+      formatTool = "goimports",
     }
   }
 }
