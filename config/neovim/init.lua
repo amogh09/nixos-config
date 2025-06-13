@@ -167,3 +167,7 @@ end
 
 -- Call the function when the buffer is opened
 vim.api.nvim_command('autocmd BufReadPost * lua CheckAndSetFileType()')
+
+-- qchat-nvim
+vim.keymap.set('n', '<space>qo', ':QChatOpen<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<space>qc', '<cmd>QChatClose<CR>', { noremap = true, silent = true })
