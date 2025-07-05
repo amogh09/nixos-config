@@ -6,25 +6,25 @@ local on_attach = function(client, bufnr)
   -- Mappings.
   -- See `:help vim.lsp.*` for documentation on any of the below functions
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
-  vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, bufopts)
+  vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, bufopts)
   vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, bufopts)
   vim.keymap.set('n', ']d', vim.diagnostic.goto_next, bufopts)
-  vim.keymap.set('n', '<space>q', vim.diagnostic.setqflist, bufopts)
+  vim.keymap.set('n', '<leader>q', vim.diagnostic.setqflist, bufopts)
   vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
   vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
   vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
   vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wl', function()
+  vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set('n', '<leader>wl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, bufopts)
-  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-  vim.keymap.set('n', '<space>ce', vim.lsp.codelens.run, bufopts)
-  vim.keymap.set('n', '<space>cr', vim.lsp.codelens.refresh, bufopts)
-  vim.keymap.set('n', '<space>f', function()
+  vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set('n', '<leader>ce', vim.lsp.codelens.run, bufopts)
+  vim.keymap.set('n', '<leader>cr', vim.lsp.codelens.refresh, bufopts)
+  vim.keymap.set('n', '<leader>f', function()
     vim.lsp.buf.format { async = true }
   end, bufopts)
 
@@ -46,8 +46,7 @@ require 'lspconfig'.gopls.setup {
   on_attach = on_attach,
   settings = {
     gopls = {
-      buildFlags = { "-tags=unit,integration,functional,linux" },
-      formatTool = "goimports",
+      buildFlags = { "-tags=unit,integration,functional,linux" }
     }
   }
 }

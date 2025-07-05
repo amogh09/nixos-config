@@ -1,4 +1,5 @@
 -- Settings
+vim.g.mapleader = " "                      -- Set leader key to space
 vim.opt.number = true
 vim.opt.encoding = "utf-8"
 vim.opt.tabstop = 4
@@ -13,14 +14,14 @@ vim.cmd [[au TermOpen * setlocal nospell]] -- Disable spell-checker in terminal 
 -- Telescope setup
 local builtins = require('telescope.builtin')
 local actions = require("telescope.actions")
-vim.keymap.set('n', '<space>p', builtins.find_files, {})
-vim.keymap.set('n', '<space>g', builtins.live_grep, {})
-vim.keymap.set('n', '<space>b', builtins.buffers, {})
-vim.keymap.set('n', '<space>h', builtins.help_tags, {})
-vim.keymap.set('n', '<space>s', builtins.lsp_dynamic_workspace_symbols, {})
-vim.keymap.set('n', '<space>y', builtins.lsp_document_symbols, {})
-vim.keymap.set('n', '<space>ic', builtins.lsp_incoming_calls, {})
-vim.keymap.set('n', '<space>oc', builtins.lsp_outgoing_calls, {})
+vim.keymap.set('n', '<leader>p', builtins.find_files, {})
+vim.keymap.set('n', '<leader>g', builtins.live_grep, {})
+vim.keymap.set('n', '<leader>b', builtins.buffers, {})
+vim.keymap.set('n', '<leader>h', builtins.help_tags, {})
+vim.keymap.set('n', '<leader>s', builtins.lsp_dynamic_workspace_symbols, {})
+vim.keymap.set('n', '<leader>y', builtins.lsp_document_symbols, {})
+vim.keymap.set('n', '<leader>ic', builtins.lsp_incoming_calls, {})
+vim.keymap.set('n', '<leader>oc', builtins.lsp_outgoing_calls, {})
 vim.keymap.set('n', 'gr', builtins.lsp_references, {})
 vim.keymap.set('n', 'gi', builtins.lsp_implementations, {})
 require('telescope').setup {
@@ -48,7 +49,7 @@ vim.keymap.set('n', '<M-h>', '<c-w>h')
 
 vim.keymap.set('n', 'cq', ':cclose<cr>', { noremap = true }) -- Close quickfix list
 
-vim.keymap.set('t', '<leader><c-r>', '<c-\\><c-n>pa')        -- Paste in terminal mode
+vim.keymap.set('t', '<C-v>', '<c-\\><c-n>pa')                -- Paste in terminal mode
 
 -- Move around windows in terminal mode
 vim.keymap.set('t', '<M-l>', '<c-\\><c-n><c-w>l')
@@ -74,9 +75,9 @@ vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
-vim.keymap.set('n', '<space>t', ':TestNearest<CR>')
-vim.keymap.set('n', '<space>T', ':TestFile<CR>')
-vim.keymap.set('n', '<space>l', ':TestLast<CR>')
+vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
+vim.keymap.set('n', '<leader>T', ':TestFile<CR>')
+vim.keymap.set('n', '<leader>l', ':TestLast<CR>')
 
 vim.cmd([[
 " Set nvim as preferred editor for Git
@@ -142,13 +143,8 @@ require('nvim-treesitter.configs').setup {
 }
 
 -- NERDTree toggle
-vim.keymap.set('n', '<space>nt', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<space>nf', ':NERDTreeFind<CR>', { noremap = true, silent = true })
-
--- Setup Github Copilot
--- Use Leader-tab to complete Copilot suggestion
-vim.api.nvim_set_keymap("i", "<Leader><Tab>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
-vim.g.copilot_no_tab_map = true
+vim.keymap.set('n', '<leader>nt', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>nf', ':NERDTreeFind<CR>', { noremap = true, silent = true })
 
 -- Set up FZF
 vim.env.FZF_DEFAULT_COMMAND = 'rg --files --ignore-file .rgignore'
@@ -169,5 +165,5 @@ end
 vim.api.nvim_command('autocmd BufReadPost * lua CheckAndSetFileType()')
 
 -- qchat-nvim
-vim.keymap.set('n', '<space>qo', ':QChatOpen<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<space>qc', '<cmd>QChatClose<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>qo', ':QChatOpen<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>qc', '<cmd>QChatClose<CR>', { noremap = true, silent = true })

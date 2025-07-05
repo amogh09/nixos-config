@@ -76,8 +76,9 @@
 
   programs.zsh = {
     enable = true;
-    initExtra =
+    initContent =
       ''
+        # Prompt
         set_ps1() {
           local exit_status="$?"
           if [[ $exit_status -eq 0 ]]; then
