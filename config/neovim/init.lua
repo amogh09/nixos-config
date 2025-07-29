@@ -167,3 +167,14 @@ vim.api.nvim_command('autocmd BufReadPost * lua CheckAndSetFileType()')
 -- qchat-nvim
 vim.keymap.set('n', '<leader>qo', ':QChatOpen<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>qc', '<cmd>QChatClose<CR>', { noremap = true, silent = true })
+
+-- Yank current file's relative path
+vim.keymap.set('n', '<leader>yf', function()
+  local filepath = vim.fn.expand('%:.')
+  if filepath == '' then
+    print('No file path to yank')
+    return
+  end
+  vim.fn.setreg('"', filepath)  -- Default vim register     ■ Undefined global `vim`.
+  print('Yanked file path: ' .. filepath)
+end, { noremap = true, silent = false, desc = 'Yank current file relative path' })
