@@ -90,17 +90,9 @@
     enable = true;
     initContent =
       ''
-        # Prompt
-        set_ps1() {
-          local exit_status="$?"
-          if [[ $exit_status -eq 0 ]]; then
-            PS1='%F{#fadfad}%m%f %F{#20ff5e}%{%G❱%}%f '
-          else
-            PS1='%F{#fadfad}%m%f %F{#ff063e}%{%G❱%}%f '
-          fi
-        }
-
-        precmd_functions+=(set_ps1)
+        # Dynamic colored prompt
+        setopt PROMPT_SUBST
+        PS1='%F{#dda0dd}%m%f %(?.%F{#98fb98}.%F{#ff6b6b})❱%f '
 
         autoload -U edit-command-line
         zle -N edit-command-line
