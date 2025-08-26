@@ -55,6 +55,7 @@
       telescope-nvim
       telescope-fzf-native-nvim
       vim-test
+      neoscroll-nvim
 
       # Custom QChat plugin from GitHub
       {

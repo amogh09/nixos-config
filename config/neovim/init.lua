@@ -179,6 +179,12 @@ vim.keymap.set('n', '<leader>yf', function()
   print('Yanked file path: ' .. filepath)
 end, { noremap = true, silent = false, desc = 'Yank current file relative path' })
 
+-- Smooth scrolling
+require('neoscroll').setup()
+
+-- Set default colorscheme
+vim.cmd('colorscheme rose-pine')
+
 -- Disco mode - cycle through colorschemes
 local schemes = {'sonokai', 'gruvbox', 'nord', 'dracula', 'onedark', 'tokyonight', 'catppuccin', 'kanagawa', 'rose-pine', 'nightfox'}
 local current = 1
