@@ -40,6 +40,13 @@
       tokyonight-nvim # Theme
       neon # Theme
       sonokai # Theme
+      nord-nvim # Theme
+      dracula-nvim # Theme
+      onedark-nvim # Theme
+      catppuccin-nvim # Theme
+      kanagawa-nvim # Theme
+      rose-pine # Theme
+      nightfox-nvim # Theme
       editorconfig-vim # editorconfig
       vim-obsession # For tracking vim sessions
       vim-commentary # For commenting code

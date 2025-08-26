@@ -175,6 +175,15 @@ vim.keymap.set('n', '<leader>yf', function()
     print('No file path to yank')
     return
   end
-  vim.fn.setreg('"', filepath)  -- Default vim register     ■ Undefined global `vim`.
+  vim.fn.setreg('"', filepath)
   print('Yanked file path: ' .. filepath)
 end, { noremap = true, silent = false, desc = 'Yank current file relative path' })
+
+-- Disco mode - cycle through colorschemes
+local schemes = {'sonokai', 'gruvbox', 'nord', 'dracula', 'onedark', 'tokyonight', 'catppuccin', 'kanagawa', 'rose-pine', 'nightfox'}
+local current = 1
+vim.keymap.set('n', '<leader>cs', function()
+  current = current % #schemes + 1
+  pcall(vim.cmd, 'colorscheme ' .. schemes[current])
+  print('🎨 ' .. schemes[current])
+end)
