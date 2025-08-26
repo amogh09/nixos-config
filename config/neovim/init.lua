@@ -185,6 +185,9 @@ require('neoscroll').setup()
 -- Set default colorscheme
 vim.cmd('colorscheme rose-pine')
 
+-- Indent guides
+require('ibl').setup()
+
 -- Disco mode - cycle through colorschemes
 local schemes = {'sonokai', 'gruvbox', 'nord', 'dracula', 'onedark', 'tokyonight', 'catppuccin', 'kanagawa', 'rose-pine', 'nightfox'}
 local current = 1

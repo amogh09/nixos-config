@@ -56,6 +56,7 @@
       telescope-fzf-native-nvim
       vim-test
       neoscroll-nvim
+      indent-blankline-nvim
 
       # Custom QChat plugin from GitHub
       {
