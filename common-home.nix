@@ -57,6 +57,7 @@
       vim-test
       neoscroll-nvim
       indent-blankline-nvim
+      nvim-treesitter-textobjects
 
       # Custom QChat plugin from GitHub
       {

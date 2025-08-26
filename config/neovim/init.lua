@@ -188,6 +188,24 @@ vim.cmd('colorscheme rose-pine')
 -- Indent guides
 require('ibl').setup()
 
+-- Treesitter text objects for better navigation
+require('nvim-treesitter.configs').setup({
+  textobjects = {
+    move = {
+      enable = true,
+      set_jumps = true,
+      goto_next_start = {
+        [']f'] = '@function.outer',
+        [']c'] = '@class.outer',
+      },
+      goto_previous_start = {
+        ['[f'] = '@function.outer',
+        ['[c'] = '@class.outer',
+      },
+    },
+  },
+})
+
 -- Disco mode - cycle through colorschemes
 local schemes = {'sonokai', 'gruvbox', 'nord', 'dracula', 'onedark', 'tokyonight', 'catppuccin', 'kanagawa', 'rose-pine', 'nightfox'}
 local current = 1
