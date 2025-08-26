@@ -92,7 +92,7 @@
       ''
         # Dynamic colored prompt
         setopt PROMPT_SUBST
-        PS1='%F{#dda0dd}%m%f %(?.%F{#98fb98}.%F{#ff6b6b})❱%f '
+        PS1='%(?.%F{#98fb98}.%F{#ff6b6b})❱%f '
 
         autoload -U edit-command-line
         zle -N edit-command-line
