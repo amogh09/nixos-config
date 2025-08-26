@@ -33,7 +33,7 @@
       ]))
 
       vim-unimpaired # Helpful keybindings
-      vim-airline
+      lualine-nvim
       pear-tree # Automatic pairing of brackets
       vim-gitgutter # For git
       vim-surround # Surround text with stuff
