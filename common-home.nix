@@ -58,6 +58,8 @@
       neoscroll-nvim
       indent-blankline-nvim
       nvim-treesitter-textobjects
+      nvim-ufo
+      promise-async
 
       # Custom QChat plugin from GitHub
       {
