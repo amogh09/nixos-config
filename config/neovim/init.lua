@@ -213,11 +213,23 @@ vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 require('ufo').setup()
 
+-- Modern statusline
+require('lualine').setup({
+  options = {
+    theme = 'rose-pine'
+  }
+})
+
 -- Disco mode - cycle through colorschemes
 local schemes = {'sonokai', 'gruvbox', 'nord', 'dracula', 'onedark', 'tokyonight', 'catppuccin', 'kanagawa', 'rose-pine', 'nightfox'}
 local current = 1
 vim.keymap.set('n', '<leader>cs', function()
   current = current % #schemes + 1
   pcall(vim.cmd, 'colorscheme ' .. schemes[current])
+  require('lualine').setup({
+    options = {
+      theme = schemes[current]
+    }
+  })
   print('🎨 ' .. schemes[current])
 end)
