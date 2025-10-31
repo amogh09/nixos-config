@@ -41,7 +41,7 @@ end
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- Setup gopls
-require 'lspconfig'.gopls.setup {
+vim.lsp.config.gopls = {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
@@ -52,13 +52,13 @@ require 'lspconfig'.gopls.setup {
 }
 
 -- Bash Language Server
-require'lspconfig'.bashls.setup{
+vim.lsp.config.bashls = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
 -- Setup Haskell Language Server
-require 'lspconfig'.hls.setup {
+vim.lsp.config.hls = {
   filetypes = { 'haskell', 'lhaskell', 'cabal' },
   settings = {
     haskell = {
@@ -71,36 +71,36 @@ require 'lspconfig'.hls.setup {
 }
 
 -- Nix Language Server
-require 'lspconfig'.nixd.setup {
+vim.lsp.config.nixd = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
 -- JSON Language Server
-require 'lspconfig'.jsonls.setup {
+vim.lsp.config.jsonls = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
 -- Typescript language server
-require 'lspconfig'.ts_ls.setup {
+vim.lsp.config.ts_ls = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
 -- Rust language server
-require 'lspconfig'.rust_analyzer.setup {
+vim.lsp.config.rust_analyzer = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
-require 'lspconfig'.yamlls.setup {
+vim.lsp.config.yamlls = {
   capabilities = capabilities,
   on_attach = on_attach
 }
 
 -- Setup Lua LS
-require 'lspconfig'.lua_ls.setup {
+vim.lsp.config.lua_ls = {
   capabilities = capabilities,
   on_attach = on_attach,
   on_init = function(client)
