@@ -60,20 +60,6 @@
       nvim-treesitter-textobjects
       nvim-ufo
       promise-async
-
-      # Custom QChat plugin from GitHub
-      {
-        plugin = pkgs.vimUtils.buildVimPlugin {
-          pname = "qchat-nvim";
-          version = "main";
-          src = pkgs.fetchFromGitHub {
-            owner = "amogh09";
-            repo = "qchat-nvim";
-            rev = "main";
-            sha256 = "sha256-kY5eXsNNmRPLJKqmnm8F8GLe0S8ZVB0Aog2BeAP6QLM="; # Will be updated on first run
-          };
-        };
-      }
     ];
   };
 
