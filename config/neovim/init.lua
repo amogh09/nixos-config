@@ -185,8 +185,7 @@ require('neoscroll').setup()
 -- Set default colorscheme
 vim.cmd('colorscheme rose-pine')
 
--- Indent guides
-require('ibl').setup()
+
 
 -- Treesitter text objects for better navigation
 require('nvim-treesitter.configs').setup({

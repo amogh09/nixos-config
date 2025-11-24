@@ -56,7 +56,6 @@
       telescope-fzf-native-nvim
       vim-test
       neoscroll-nvim
-      indent-blankline-nvim
       nvim-treesitter-textobjects
       nvim-ufo
       promise-async
@@ -67,8 +66,12 @@
 
   programs.git = {
     enable = true;
-    userName = "Amogh Rathore";
-    userEmail = "amoghdroid09@gmail.com";
+    settings = {
+      user = {
+        name = "Amogh Rathore";
+        email = "amoghdroid09@gmail.com";
+      };
+    };
     ignores = [ ".envrc" ".direnv/" "Session.vim" ];
   };
 
