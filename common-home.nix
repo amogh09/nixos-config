@@ -163,5 +163,6 @@
     gnumake
     netcat
     yaml-language-server
+    typescript-language-server
   ];
 }

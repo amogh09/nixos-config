@@ -1,10 +1,18 @@
--- LSP Setup
+-- ========================
+-- LSP and Completion Setup
+-- ========================
+
+local lspconfig = require('lspconfig')
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local luasnip = require 'luasnip'
+local cmp = require 'cmp'
+
+-- ========================
+-- on_attach function
+-- ========================
 local on_attach = function(client, bufnr)
-  -- Enable completion triggered by <c-x><c-o>
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-  -- Mappings.
-  -- See `:help vim.lsp.*` for documentation on any of the below functions
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
   vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, bufopts)
   vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, bufopts)
@@ -28,79 +36,73 @@ local on_attach = function(client, bufnr)
     vim.lsp.buf.format { async = true }
   end, bufopts)
 
-  -- Format before writing
-  vim.api.nvim_create_autocmd({ "BufWritePre" }, {
-    pattern = { "*.go", "*.hs", "*.js" },
-    callback = function()
-      vim.lsp.buf.format { async = false }
-    end,
+  -- Format before writing for certain filetypes
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = { "*.go", "*.hs", "*.js", "*.ts", "*.tsx" },
+    callback = function() vim.lsp.buf.format { async = false } end,
   })
 end
 
--- Add additional capabilities supported by nvim-cmp
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- ========================
+-- Setup LSP servers
+-- ========================
 
--- Setup gopls
-vim.lsp.config.gopls = {
+-- Go
+lspconfig.gopls.setup({
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
     gopls = {
-      buildFlags = { "-tags=unit,integration,functional,linux" }
-    }
-  }
-}
+      buildFlags = { "-tags=unit,integration,functional,linux" },
+    },
+  },
+})
 
--- Bash Language Server
-vim.lsp.config.bashls = {
+-- Bash
+lspconfig.bashls.setup({
   capabilities = capabilities,
-  on_attach = on_attach
-}
+  on_attach = on_attach,
+})
 
--- Setup Haskell Language Server
-vim.lsp.config.hls = {
-  filetypes = { 'haskell', 'lhaskell', 'cabal' },
+-- Haskell
+lspconfig.hls.setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
+  filetypes = { "haskell", "lhaskell", "cabal" },
   settings = {
     haskell = {
       cabalFormattingProvider = "cabalfmt",
-      formattingProvider = "ormolu"
-    }
+      formattingProvider = "ormolu",
+    },
   },
-  capabilities = capabilities,
-  on_attach = on_attach
-}
+})
 
--- Nix Language Server
-vim.lsp.config.nixd = {
+-- Nix
+lspconfig.nixd.setup({
   capabilities = capabilities,
-  on_attach = on_attach
-}
+  on_attach = on_attach,
+})
 
--- JSON Language Server
-vim.lsp.config.jsonls = {
+-- JSON
+lspconfig.jsonls.setup({
   capabilities = capabilities,
-  on_attach = on_attach
-}
+  on_attach = on_attach,
+})
 
--- Typescript language server
-vim.lsp.config.ts_ls = {
+-- YAML
+lspconfig.yamlls.setup({
   capabilities = capabilities,
-  on_attach = on_attach
-}
+  on_attach = on_attach,
+})
 
--- Rust language server
-vim.lsp.config.rust_analyzer = {
+-- Rust
+lspconfig.rust_analyzer.setup({
   capabilities = capabilities,
-  on_attach = on_attach
-}
+  on_attach = on_attach,
+})
 
-vim.lsp.config.yamlls = {
-  capabilities = capabilities,
-  on_attach = on_attach
-}
-
--- Setup Lua LS
-vim.lsp.config.lua_ls = {
+-- Lua
+lspconfig.lua_ls.setup({
   capabilities = capabilities,
   on_attach = on_attach,
   on_init = function(client)
@@ -108,37 +110,32 @@ vim.lsp.config.lua_ls = {
     if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
       client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
         Lua = {
-          runtime = {
-            -- Tell the language server which version of Lua you're using
-            -- (most likely LuaJIT in the case of Neovim)
-            version = 'LuaJIT'
-          },
-          -- Make the server aware of Neovim runtime files
+          runtime = { version = 'LuaJIT' },
           workspace = {
             checkThirdParty = false,
-            library = {
-              vim.env.VIMRUNTIME
-              -- "${3rd}/luv/library"
-              -- "${3rd}/busted/library",
-            }
-            -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-            -- library = vim.api.nvim_get_runtime_file("", true)
-          }
-        }
+            library = { vim.env.VIMRUNTIME },
+          },
+        },
       })
-
       client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
     end
     return true
-  end
-}
+  end,
+})
 
--- luasnip setup
-local luasnip = require 'luasnip'
+-- ========================
+-- TypeScript / JavaScript using ts_ls
+-- ========================
+lspconfig.ts_ls.setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
+  filetypes = { "typescript", "typescriptreact", "typescript.tsx", "javascript", "javascriptreact" },
+})
 
+-- ========================
 -- nvim-cmp setup
-local cmp = require 'cmp'
-cmp.setup {
+-- ========================
+cmp.setup({
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)
@@ -148,31 +145,18 @@ cmp.setup {
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
-    ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
-    },
+    ['<CR>'] = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
     ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
+      if cmp.visible() then cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then luasnip.expand_or_jump()
+      else fallback() end
     end, { 'i', 's' }),
     ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
+      if cmp.visible() then cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then luasnip.jump(-1)
+      else fallback() end
     end, { 'i', 's' }),
   }),
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-  },
-}
+  sources = { { name = 'nvim_lsp' }, { name = 'luasnip' } },
+})
+
