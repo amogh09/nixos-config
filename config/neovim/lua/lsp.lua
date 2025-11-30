@@ -2,7 +2,6 @@
 -- LSP and Completion Setup
 -- ========================
 
-local lspconfig = require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local luasnip = require 'luasnip'
 local cmp = require 'cmp'
@@ -44,11 +43,11 @@ local on_attach = function(client, bufnr)
 end
 
 -- ========================
--- Setup LSP servers
+-- Setup LSP servers (new API)
 -- ========================
 
 -- Go
-lspconfig.gopls.setup({
+vim.lsp.config('gopls', {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
@@ -59,13 +58,13 @@ lspconfig.gopls.setup({
 })
 
 -- Bash
-lspconfig.bashls.setup({
+vim.lsp.config('bashls', {
   capabilities = capabilities,
   on_attach = on_attach,
 })
 
 -- Haskell
-lspconfig.hls.setup({
+vim.lsp.config('hls', {
   capabilities = capabilities,
   on_attach = on_attach,
   filetypes = { "haskell", "lhaskell", "cabal" },
@@ -78,31 +77,31 @@ lspconfig.hls.setup({
 })
 
 -- Nix
-lspconfig.nixd.setup({
+vim.lsp.config('nixd', {
   capabilities = capabilities,
   on_attach = on_attach,
 })
 
 -- JSON
-lspconfig.jsonls.setup({
+vim.lsp.config('jsonls', {
   capabilities = capabilities,
   on_attach = on_attach,
 })
 
 -- YAML
-lspconfig.yamlls.setup({
+vim.lsp.config('yamlls', {
   capabilities = capabilities,
   on_attach = on_attach,
 })
 
 -- Rust
-lspconfig.rust_analyzer.setup({
+vim.lsp.config('rust_analyzer', {
   capabilities = capabilities,
   on_attach = on_attach,
 })
 
 -- Lua
-lspconfig.lua_ls.setup({
+vim.lsp.config('lua_ls', {
   capabilities = capabilities,
   on_attach = on_attach,
   on_init = function(client)
@@ -123,13 +122,24 @@ lspconfig.lua_ls.setup({
   end,
 })
 
--- ========================
 -- TypeScript / JavaScript using ts_ls
--- ========================
-lspconfig.ts_ls.setup({
+vim.lsp.config('ts_ls', {
   capabilities = capabilities,
   on_attach = on_attach,
   filetypes = { "typescript", "typescriptreact", "typescript.tsx", "javascript", "javascriptreact" },
+})
+
+-- Enable all configured servers
+vim.lsp.enable({
+  'gopls',
+  'bashls',
+  'hls',
+  'nixd',
+  'jsonls',
+  'yamlls',
+  'rust_analyzer',
+  'lua_ls',
+  'ts_ls',
 })
 
 -- ========================
