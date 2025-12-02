@@ -203,23 +203,6 @@ require('nvim-treesitter.configs').setup({
   },
 })
 
--- Better folding with nvim-ufo
-vim.o.foldcolumn = '1'
-vim.o.foldlevel = 99
-vim.o.foldlevelstart = 99
-vim.o.foldenable = true
-require('ufo').setup({
-  provider_selector = function(bufnr, filetype, buftype)
-    -- For cabal: don't use LSP at all
-    if filetype == 'cabal' then
-      return { 'treesitter', 'indent' }
-    end
-
-    -- Default for everything else: LSP first, then treesitter
-    return { 'lsp', 'treesitter' }
-  end,
-})
-
 -- Modern statusline
 require('lualine').setup({
   options = {

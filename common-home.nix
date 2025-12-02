@@ -57,7 +57,6 @@
       vim-test
       neoscroll-nvim
       nvim-treesitter-textobjects
-      nvim-ufo
       promise-async
     ];
   };
