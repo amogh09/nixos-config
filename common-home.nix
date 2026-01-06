@@ -78,6 +78,10 @@
     enable = true;
     initContent =
       ''
+        # Set UTF-8 locale for proper Unicode support
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+
         # Dynamic colored prompt
         setopt PROMPT_SUBST
         PS1='%(?.%F{#98fb98}.%F{#ff6b6b})❱%f '
