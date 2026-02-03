@@ -73,6 +73,9 @@ vim.o.sessionoptions = vim.o.sessionoptions .. ",tabpages,globals"
 -- Mute search highlighting
 vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 
+-- Toggle line wrapping
+vim.keymap.set('n', '<leader>w', ':set wrap!<CR>', { noremap = true, silent = true })
+
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
