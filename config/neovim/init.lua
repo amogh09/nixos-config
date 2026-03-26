@@ -91,6 +91,20 @@ vim.api.nvim_create_user_command('Nterm', function(opts)
   vim.api.nvim_buf_set_name(0, opts.args)
 end, { nargs = 1 })
 
+-- Tmux terminal: :Tmux session — attaches or creates, names buffer tmux:<session>
+vim.api.nvim_create_user_command('Tmux', function(opts)
+  local session = opts.args
+  vim.cmd('terminal tmux new-session -A -s ' .. vim.fn.shellescape(session))
+  vim.api.nvim_buf_set_name(0, 'tmux:' .. session)
+end, {
+  nargs = 1,
+  complete = function(arg_lead)
+    local out = vim.fn.system('tmux list-sessions -F "#S" 2>/dev/null')
+    local sessions = vim.split(out, '\n', { trimempty = true })
+    return vim.tbl_filter(function(s) return s:find(arg_lead, 1, true) == 1 end, sessions)
+  end,
+})
+
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
