@@ -76,6 +76,21 @@ vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 -- Toggle line wrapping
 vim.keymap.set('n', '<leader>w', ':set wrap!<CR>', { noremap = true, silent = true })
 
+-- Terminal buffer picker
+vim.keymap.set('n', '<leader>tt', function()
+  require('telescope.builtin').buffers({
+    filter = function(buf)
+      return vim.bo[buf].buftype == 'terminal'
+    end,
+  })
+end, { desc = 'Terminal buffers' })
+
+-- Named terminal: :nterm server, :nterm tests, etc.
+vim.api.nvim_create_user_command('Nterm', function(opts)
+  vim.cmd('terminal')
+  vim.api.nvim_buf_set_name(0, opts.args)
+end, { nargs = 1 })
+
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
