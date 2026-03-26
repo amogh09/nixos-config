@@ -76,7 +76,9 @@ vim.keymap.set('n', '<C-l>', ':<C-u>nohlsearch<CR><C-l>')
 -- Toggle line wrapping
 vim.keymap.set('n', '<leader>w', ':set wrap!<CR>', { noremap = true, silent = true })
 
--- Terminal buffer picker
+-- Terminal buffer picker — custom picker because telescope's builtin buffers()
+-- doesn't support filtering by buftype. Collects all terminal buffers and
+-- strips the cwd prefix so named buffers display as "term:foo" / "tmux:bar".
 vim.keymap.set('n', '<leader>tt', function()
   local results = {}
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
@@ -90,24 +92,38 @@ vim.keymap.set('n', '<leader>tt', function()
     finder = require('telescope.finders').new_table {
       results = results,
       entry_maker = function(e)
-        return { value = e.bufnr, display = e.name, ordinal = e.name, bufnr = e.bufnr }
+        -- nvim_buf_set_name resolves relative names against cwd; strip that prefix
+        local display = e.name:gsub('^' .. vim.pesc(vim.uv.cwd() .. '/'), '')
+        return { value = e.bufnr, display = display, ordinal = display, bufnr = e.bufnr }
       end,
     },
     sorter = require('telescope.config').values.generic_sorter({}),
   }):find()
 end, { desc = 'Terminal buffers' })
 
--- Named terminal: :nterm server, :nterm tests, etc.
+-- Named terminal: :Term server, :Term tests, etc.
 vim.api.nvim_create_user_command('Term', function(opts)
   vim.cmd('terminal')
-  vim.api.nvim_buf_set_name(0, opts.args)
+  local old_name = vim.api.nvim_buf_get_name(0)
+  vim.api.nvim_buf_set_name(0, 'term:' .. opts.args)
+  -- nvim_buf_set_name leaves a phantom buffer with the old term:// name; wipe it
+  local phantom = vim.fn.bufnr(old_name)
+  if phantom ~= -1 and phantom ~= vim.api.nvim_get_current_buf() then
+    vim.api.nvim_buf_delete(phantom, { force = true })
+  end
 end, { nargs = 1 })
 
 -- Tmux terminal: :Tmux session — attaches or creates, names buffer tmux:<session>
 vim.api.nvim_create_user_command('Tmux', function(opts)
   local session = opts.args
   vim.cmd('terminal tmux new-session -A -s ' .. vim.fn.shellescape(session))
+  local old_name = vim.api.nvim_buf_get_name(0)
   vim.api.nvim_buf_set_name(0, 'tmux:' .. session)
+  -- nvim_buf_set_name leaves a phantom buffer with the old term:// name; wipe it
+  local phantom = vim.fn.bufnr(old_name)
+  if phantom ~= -1 and phantom ~= vim.api.nvim_get_current_buf() then
+    vim.api.nvim_buf_delete(phantom, { force = true })
+  end
 end, {
   nargs = 1,
   complete = function(arg_lead)
