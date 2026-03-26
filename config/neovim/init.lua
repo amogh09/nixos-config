@@ -78,15 +78,27 @@ vim.keymap.set('n', '<leader>w', ':set wrap!<CR>', { noremap = true, silent = tr
 
 -- Terminal buffer picker
 vim.keymap.set('n', '<leader>tt', function()
-  require('telescope.builtin').buffers({
-    filter = function(buf)
-      return vim.bo[buf].buftype == 'terminal'
-    end,
-  })
+  local results = {}
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[b].buftype == 'terminal' then
+      table.insert(results, { bufnr = b, name = vim.api.nvim_buf_get_name(b) })
+    end
+  end
+  if #results == 0 then return print('No terminal buffers') end
+  require('telescope.pickers').new({}, {
+    prompt_title = 'Terminal Buffers',
+    finder = require('telescope.finders').new_table {
+      results = results,
+      entry_maker = function(e)
+        return { value = e.bufnr, display = e.name, ordinal = e.name, bufnr = e.bufnr }
+      end,
+    },
+    sorter = require('telescope.config').values.generic_sorter({}),
+  }):find()
 end, { desc = 'Terminal buffers' })
 
 -- Named terminal: :nterm server, :nterm tests, etc.
-vim.api.nvim_create_user_command('Nterm', function(opts)
+vim.api.nvim_create_user_command('Term', function(opts)
   vim.cmd('terminal')
   vim.api.nvim_buf_set_name(0, opts.args)
 end, { nargs = 1 })
