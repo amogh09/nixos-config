@@ -11,6 +11,15 @@ vim.opt.foldenable = false                 -- Don't fold by default
 vim.opt.spell = false                      -- Enable built-in spell-checker
 vim.cmd [[au TermOpen * setlocal nospell]] -- Disable spell-checker in terminal mode
 
+-- Jump to bottom of terminal buffers on WinLeave so they follow new output
+-- while you're in another window (Neovim exits terminal mode on WinLeave,
+-- and in normal mode the viewport only follows if the cursor is at the end)
+vim.api.nvim_create_autocmd('WinLeave', {
+  callback = function()
+    if vim.bo.buftype == 'terminal' then vim.cmd('normal! G') end
+  end,
+})
+
 -- Telescope setup
 local builtins = require('telescope.builtin')
 local actions = require("telescope.actions")
