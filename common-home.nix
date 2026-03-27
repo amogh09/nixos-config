@@ -165,6 +165,7 @@
     shellcheck
     gnumake
     netcat
+    gh
     yaml-language-server
     typescript-language-server
     glow
