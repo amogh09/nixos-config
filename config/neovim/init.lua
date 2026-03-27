@@ -133,6 +133,35 @@ end, {
   end,
 })
 
+-- Tmux session picker — lists all tmux sessions, reuses an existing buffer if
+-- one is already attached, otherwise creates a new one via :Tmux.
+-- NOTE: relies on :Tmux naming buffers "tmux:<session>"; keep in sync.
+vim.keymap.set('n', '<leader>tm', function()
+  local out = vim.fn.system('tmux list-sessions -F "#S" 2>/dev/null')
+  local sessions = vim.split(out, '\n', { trimempty = true })
+  if #sessions == 0 then return print('No tmux sessions') end
+  require('telescope.pickers').new({}, {
+    prompt_title = 'Tmux Sessions',
+    finder = require('telescope.finders').new_table { results = sessions },
+    sorter = require('telescope.config').values.generic_sorter({}),
+    attach_mappings = function(_, map)
+      local actions = require('telescope.actions')
+      local action_state = require('telescope.actions.state')
+      actions.select_default:replace(function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        local existing = vim.fn.bufnr('tmux:' .. selection[1])
+        if existing ~= -1 then
+          vim.cmd('buffer ' .. existing)
+        else
+          vim.cmd('Tmux ' .. selection[1])
+        end
+      end)
+      return true
+    end,
+  }):find()
+end, { desc = 'Tmux session picker' })
+
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
