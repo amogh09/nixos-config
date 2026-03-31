@@ -262,6 +262,9 @@ require('lsp') -- Setup LSP
 -- Treesitter (highlight enabled by default in new nvim-treesitter)
 vim.treesitter.start = vim.treesitter.start or function() end
 
+-- Render markdown inline
+require('render-markdown').setup({})
+
 -- NERDTree toggle
 vim.keymap.set('n', '<leader>nt', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>nf', ':NERDTreeFind<CR>', { noremap = true, silent = true })

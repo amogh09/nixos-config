@@ -30,6 +30,8 @@
         p.json
         p.lua
         p.bash
+        p.markdown
+        p.markdown_inline
       ]))
 
       vim-unimpaired # Helpful keybindings
@@ -58,6 +60,7 @@
       vim-test
       neoscroll-nvim
       nvim-treesitter-textobjects
+      render-markdown-nvim
       promise-async
     ];
   };
