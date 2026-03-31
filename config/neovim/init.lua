@@ -142,15 +142,32 @@ end, {
   end,
 })
 
+-- Kill a tmux session and wipe its neovim buffer if one exists
+vim.api.nvim_create_user_command('TmuxKill', function(opts)
+  local session = opts.args
+  local buf = vim.fn.bufnr('tmux:' .. session)
+  if buf ~= -1 then vim.api.nvim_buf_delete(buf, { force = true }) end
+  vim.fn.system('tmux kill-session -t ' .. vim.fn.shellescape(session))
+  print('Killed tmux session: ' .. session)
+end, {
+  nargs = 1,
+  complete = function(arg_lead)
+    local out = vim.fn.system('tmux list-sessions -F "#S" 2>/dev/null')
+    local sessions = vim.split(out, '\n', { trimempty = true })
+    return vim.tbl_filter(function(s) return s:find(arg_lead, 1, true) == 1 end, sessions)
+  end,
+})
+
 -- Tmux session picker — lists all tmux sessions, reuses an existing buffer if
 -- one is already attached, otherwise creates a new one via :Tmux.
+-- <CR> to attach, <C-d> to kill session.
 -- NOTE: relies on :Tmux naming buffers "tmux:<session>"; keep in sync.
 vim.keymap.set('n', '<leader>tm', function()
   local out = vim.fn.system('tmux list-sessions -F "#S" 2>/dev/null')
   local sessions = vim.split(out, '\n', { trimempty = true })
   if #sessions == 0 then return print('No tmux sessions') end
   require('telescope.pickers').new({}, {
-    prompt_title = 'Tmux Sessions',
+    prompt_title = 'Tmux Sessions (C-d to kill)',
     finder = require('telescope.finders').new_table { results = sessions },
     sorter = require('telescope.config').values.generic_sorter({}),
     attach_mappings = function(_, map)
@@ -165,6 +182,16 @@ vim.keymap.set('n', '<leader>tm', function()
         else
           vim.cmd('Tmux ' .. selection[1])
         end
+      end)
+      map({ 'i', 'n' }, '<C-d>', function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if not selection then return end
+        vim.cmd('TmuxKill ' .. selection[1])
+        -- Refresh the picker
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local refreshed = vim.split(vim.fn.system('tmux list-sessions -F "#S" 2>/dev/null'), '\n', { trimempty = true })
+        if #refreshed == 0 then return actions.close(prompt_bufnr) end
+        current_picker:refresh(require('telescope.finders').new_table { results = refreshed })
       end)
       return true
     end,
@@ -232,13 +259,8 @@ vim.api.nvim_create_autocmd("BufNewFile", {
 
 require('lsp') -- Setup LSP
 
--- Treesitter
-require('nvim-treesitter.configs').setup {
-  highlight = {
-    enable = true,
-    additional_vim_regex_highlighting = false,
-  },
-}
+-- Treesitter (highlight enabled by default in new nvim-treesitter)
+vim.treesitter.start = vim.treesitter.start or function() end
 
 -- NERDTree toggle
 vim.keymap.set('n', '<leader>nt', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
@@ -286,17 +308,15 @@ vim.cmd('colorscheme rose-pine')
 
 
 -- Treesitter text objects for better navigation
-require('nvim-treesitter.configs').setup({
-  textobjects = {
-    move = {
-      enable = true,
-      set_jumps = true,
-      goto_next_start = {
-        [']f'] = '@function.outer',
-      },
-      goto_previous_start = {
-        ['[f'] = '@function.outer',
-      },
+require('nvim-treesitter-textobjects').setup({
+  move = {
+    enable = true,
+    set_jumps = true,
+    goto_next_start = {
+      [']f'] = '@function.outer',
+    },
+    goto_previous_start = {
+      ['[f'] = '@function.outer',
     },
   },
 })

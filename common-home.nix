@@ -52,6 +52,7 @@
       vim-commentary # For commenting code
       vim-devicons # icons!!
       taboo-vim # Tab management
+      plenary-nvim
       telescope-nvim
       telescope-fzf-native-nvim
       vim-test
