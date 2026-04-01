@@ -1,5 +1,19 @@
 -- Settings
 vim.g.mapleader = " "                      -- Set leader key to space
+
+-- OSC 52 clipboard — must be set before anything touches the clipboard provider
+vim.g.clipboard = {
+  name = 'OSC 52',
+  copy = {
+    ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+  },
+  paste = {
+    ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+  },
+}
+
 vim.opt.number = true
 vim.opt.encoding = "utf-8"
 vim.opt.tabstop = 4
