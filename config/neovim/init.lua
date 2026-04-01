@@ -273,8 +273,10 @@ vim.api.nvim_create_autocmd("BufNewFile", {
 
 require('lsp') -- Setup LSP
 
--- Treesitter (highlight enabled by default in new nvim-treesitter)
-vim.treesitter.start = vim.treesitter.start or function() end
+-- Treesitter — enable highlighting for all buffers with a parser
+vim.api.nvim_create_autocmd('FileType', {
+  callback = function() pcall(vim.treesitter.start) end,
+})
 
 -- Render markdown inline
 require('render-markdown').setup({})
