@@ -126,6 +126,7 @@ end, { desc = 'Terminal buffers' })
 
 -- Named terminal: :Term server, :Term tests, etc.
 vim.api.nvim_create_user_command('Term', function(opts)
+  local prev = vim.api.nvim_get_current_buf()
   vim.cmd('terminal')
   local old_name = vim.api.nvim_buf_get_name(0)
   vim.api.nvim_buf_set_name(0, 'term:' .. opts.args)
@@ -134,11 +135,18 @@ vim.api.nvim_create_user_command('Term', function(opts)
   if phantom ~= -1 and phantom ~= vim.api.nvim_get_current_buf() then
     vim.api.nvim_buf_delete(phantom, { force = true })
   end
+  -- Restore alternate buffer so <C-^> returns to the buffer we came from
+  if prev ~= -1 and vim.api.nvim_buf_is_valid(prev) then
+    local cur = vim.api.nvim_get_current_buf()
+    vim.api.nvim_set_current_buf(prev)
+    vim.api.nvim_set_current_buf(cur)
+  end
 end, { nargs = 1 })
 
 -- Tmux terminal: :Tmux session — attaches or creates, names buffer tmux:<session>
 vim.api.nvim_create_user_command('Tmux', function(opts)
   local session = opts.args
+  local prev = vim.api.nvim_get_current_buf()
   vim.cmd('terminal tmux new-session -A -s ' .. vim.fn.shellescape(session))
   local old_name = vim.api.nvim_buf_get_name(0)
   vim.api.nvim_buf_set_name(0, 'tmux:' .. session)
@@ -146,6 +154,12 @@ vim.api.nvim_create_user_command('Tmux', function(opts)
   local phantom = vim.fn.bufnr(old_name)
   if phantom ~= -1 and phantom ~= vim.api.nvim_get_current_buf() then
     vim.api.nvim_buf_delete(phantom, { force = true })
+  end
+  -- Restore alternate buffer so <C-^> returns to the buffer we came from
+  if prev ~= -1 and vim.api.nvim_buf_is_valid(prev) then
+    local cur = vim.api.nvim_get_current_buf()
+    vim.api.nvim_set_current_buf(prev)
+    vim.api.nvim_set_current_buf(cur)
   end
 end, {
   nargs = 1,
@@ -317,6 +331,9 @@ vim.keymap.set('n', '<leader>yf', function()
   vim.fn.setreg('"', filepath)
   print('Yanked file path: ' .. filepath)
 end, { noremap = true, silent = false, desc = 'Yank current file relative path' })
+
+-- Yank text inside () to system clipboard
+vim.keymap.set('n', '<leader>yl', '"+yi)', { desc = 'Yank inside () to clipboard' })
 
 -- Smooth scrolling
 require('neoscroll').setup()
