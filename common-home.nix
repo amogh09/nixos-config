@@ -155,8 +155,8 @@
     bat
     neovim-remote
     ripgrep
-    nodePackages_latest.vscode-langservers-extracted
-    nodePackages_latest.bash-language-server
+    vscode-langservers-extracted
+    bash-language-server
     jq
     htop
     curl
