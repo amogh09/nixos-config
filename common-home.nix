@@ -6,6 +6,8 @@
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
+  programs.mise.enable = true;
+
   targets.genericLinux.enable = true;
 
   programs.neovim = {
