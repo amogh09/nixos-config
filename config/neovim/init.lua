@@ -80,7 +80,7 @@ vim.keymap.set('t', '<M-k>', '<c-\\><c-n><c-w>k')
 vim.keymap.set('t', '<M-j>', '<c-\\><c-n><c-w>j')
 vim.keymap.set('t', '<M-h>', '<c-\\><c-n><c-w>h')
 
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>') -- Esc to get out of terminal mode
+vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>') -- Double-Esc to exit terminal mode (single Esc passes through to TUI apps)
 
 vim.o.termguicolors = true                  -- Enable true colors
 
