@@ -155,6 +155,7 @@
   home.packages = with pkgs; [
     tree
     bat
+    gnupg
     neovim-remote
     ripgrep
     vscode-langservers-extracted
@@ -176,5 +177,6 @@
     typescript-language-server
     glow
     pandoc
+    mosh
   ];
 }
