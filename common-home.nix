@@ -62,7 +62,6 @@
       vim-test
       neoscroll-nvim
       nvim-treesitter-textobjects
-      render-markdown-nvim
       promise-async
     ];
   };
