@@ -63,6 +63,7 @@
       neoscroll-nvim
       nvim-treesitter-textobjects
       promise-async
+      diffview-nvim # Changeset review UI
     ];
   };
 

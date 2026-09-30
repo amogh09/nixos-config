@@ -354,6 +354,32 @@ require('nvim-treesitter-textobjects').setup({
   },
 })
 
+-- Diffview — changeset review. The working-tree side is a real buffer, so LSP
+-- and treesitter navigation work inside the diff; the indexed/rev side does not.
+require('diffview').setup({
+  use_icons = false, -- nvim-web-devicons isn't installed
+  enhanced_diff_hl = true,
+  view = {
+    merge_tool = { layout = 'diff3_mixed' },
+  },
+  keymaps = {
+    view = { { 'n', 'q', '<cmd>DiffviewClose<cr>', { desc = 'Close diffview' } } },
+    file_panel = { { 'n', 'q', '<cmd>DiffviewClose<cr>', { desc = 'Close diffview' } } },
+    file_history_panel = { { 'n', 'q', '<cmd>DiffviewClose<cr>', { desc = 'Close diffview' } } },
+  },
+})
+
+vim.keymap.set('n', '<leader>dd', ':DiffviewOpen<CR>', { desc = 'Review working tree vs HEAD' })
+vim.keymap.set('n', '<leader>dc', ':DiffviewClose<CR>', { desc = 'Close diffview' })
+vim.keymap.set('n', '<leader>dh', ':DiffviewFileHistory %<CR>', { desc = 'History of current file' })
+vim.keymap.set('n', '<leader>dH', ':DiffviewFileHistory<CR>', { desc = 'History of current branch' })
+-- Review a whole branch: diff against the merge-base so only this branch's work shows
+vim.keymap.set('n', '<leader>db', function()
+  local base = vim.fn.systemlist('git merge-base HEAD origin/HEAD 2>/dev/null')[1]
+  if not base or base == '' then return print('No merge-base with origin/HEAD') end
+  vim.cmd('DiffviewOpen ' .. base)
+end, { desc = 'Review branch vs merge-base' })
+
 -- Modern statusline
 require('lualine').setup({
   options = {
