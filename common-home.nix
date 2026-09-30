@@ -79,6 +79,16 @@
     ignores = [ ".envrc" ".direnv/" "Session.vim" ];
   };
 
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      navigate = true; # n/N jumps between files in the pager
+      line-numbers = true;
+      hyperlinks = false;
+    };
+  };
+
   programs.zsh = {
     enable = true;
     initContent =
