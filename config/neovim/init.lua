@@ -226,6 +226,140 @@ vim.keymap.set('n', '<leader>tm', function()
   }):find()
 end, { desc = 'Tmux session picker' })
 
+-- Tmux session sidebar — a read-only listing of tmux sessions in a left split,
+-- with the session showing in the focused window highlighted. Shares the left
+-- split with NERDTree: opening either closes the other, so only one sidebar
+-- occupies the column at a time.
+local tmux_sidebar_win = nil
+-- Session name per displayed line, so <CR> never has to parse the rendered text
+-- and names containing spaces still resolve.
+local tmux_sidebar_names = {}
+
+local function tmux_sidebar_lines()
+  local out = vim.fn.systemlist([[tmux list-sessions -F '#{session_name}' 2>/dev/null]])
+  tmux_sidebar_names = {}
+  if #out == 0 then return { '  no tmux sessions' } end
+  local lines = {}
+  for i, name in ipairs(out) do
+    lines[i] = '  ' .. name
+    tmux_sidebar_names[i] = name
+  end
+  return lines
+end
+
+local tmux_sidebar_ns = vim.api.nvim_create_namespace('tmux_sidebar')
+-- Custom group, so no colorscheme defines it and the link survives a change of
+-- theme while resolving to that theme's Visual.
+vim.api.nvim_set_hl(0, 'TmuxSidebarActive', { link = 'Visual', default = true })
+
+-- The session showing in the focused window, or in the window focused before the
+-- sidebar when the sidebar holds focus. Buffer names resolve against cwd, so the
+-- `tmux:` prefix sits after the last path separator.
+local function tmux_sidebar_active_name()
+  local win = vim.api.nvim_get_current_win()
+  if win == tmux_sidebar_win then win = vim.fn.win_getid(vim.fn.winnr('#')) end
+  if win == 0 or not vim.api.nvim_win_is_valid(win) then return nil end
+  local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
+  return bufname:match('tmux:(.+)$')
+end
+
+local function tmux_sidebar_render()
+  if not (tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win)) then return end
+  local buf = vim.api.nvim_win_get_buf(tmux_sidebar_win)
+  vim.bo[buf].modifiable = true
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, tmux_sidebar_lines())
+  vim.bo[buf].modifiable = false
+  vim.api.nvim_buf_clear_namespace(buf, tmux_sidebar_ns, 0, -1)
+  local active = tmux_sidebar_active_name()
+  if not active then return end
+  for i, name in ipairs(tmux_sidebar_names) do
+    if name == active then
+      vim.api.nvim_buf_set_extmark(buf, tmux_sidebar_ns, i - 1, 0,
+        { line_hl_group = 'TmuxSidebarActive' })
+    end
+  end
+end
+
+-- Open the session under the cursor in the window used before the sidebar, so
+-- the sidebar survives. Reuses an existing :Tmux buffer rather than reattaching.
+local function tmux_sidebar_open_session()
+  local name = tmux_sidebar_names[vim.fn.line('.')]
+  if not name then return end
+  local prev = vim.fn.win_getid(vim.fn.winnr('#'))
+  if prev ~= 0 and prev ~= tmux_sidebar_win and vim.api.nvim_win_is_valid(prev) then
+    vim.api.nvim_set_current_win(prev)
+  else
+    -- Sidebar is the only window; make one beside it and keep its width.
+    vim.cmd('rightbelow vsplit')
+    if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
+      vim.api.nvim_win_set_width(tmux_sidebar_win, 32)
+    end
+  end
+  local existing = vim.fn.bufnr('tmux:' .. name)
+  if existing ~= -1 then
+    vim.cmd('buffer ' .. existing)
+  else
+    vim.cmd('Tmux ' .. name)
+  end
+  -- Deferred: :Tmux renames the buffer and swaps the alternate after the events
+  -- a render would ride on, so re-read once that has settled.
+  vim.schedule(tmux_sidebar_render)
+end
+
+-- Kill the session under the cursor. :TmuxKill also wipes its buffer.
+local function tmux_sidebar_kill_session()
+  local name = tmux_sidebar_names[vim.fn.line('.')]
+  if not name then return end
+  vim.cmd('TmuxKill ' .. name)
+  tmux_sidebar_render()
+end
+
+local function tmux_sidebar_close()
+  if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
+    vim.api.nvim_win_close(tmux_sidebar_win, true)
+  end
+  tmux_sidebar_win = nil
+end
+
+local function tmux_sidebar_open()
+  vim.cmd('NERDTreeClose') -- no-op when closed; keeps one sidebar in the column
+  vim.cmd('topleft vsplit')
+  tmux_sidebar_win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_width(tmux_sidebar_win, 32)
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_win_set_buf(tmux_sidebar_win, buf)
+  vim.bo[buf].filetype = 'tmuxsessions'
+  vim.bo[buf].buftype = 'nofile'
+  vim.wo[tmux_sidebar_win].number = false
+  vim.wo[tmux_sidebar_win].relativenumber = false
+  vim.wo[tmux_sidebar_win].wrap = false
+  vim.wo[tmux_sidebar_win].winfixwidth = true
+  vim.keymap.set('n', 'q', tmux_sidebar_close, { buffer = buf, nowait = true })
+  vim.keymap.set('n', '<CR>', tmux_sidebar_open_session, { buffer = buf, nowait = true })
+  vim.keymap.set('n', '<C-d>', tmux_sidebar_kill_session, { buffer = buf, nowait = true })
+  tmux_sidebar_render()
+end
+
+vim.keymap.set('n', '<leader>ts', function()
+  if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
+    tmux_sidebar_close()
+  else
+    tmux_sidebar_open()
+  end
+end, { desc = 'Toggle tmux session sidebar' })
+
+-- tmux state changes outside nvim, so re-read on the events that mean "back here".
+-- BufEnter also keeps the active-session highlight current when a window's buffer
+-- changes without the window itself changing.
+vim.api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter' },
+  { callback = tmux_sidebar_render })
+
+-- NERDTree takes the same column, so close the sidebar when it opens
+vim.keymap.set('n', '<leader>nt', function()
+  tmux_sidebar_close()
+  vim.cmd('NERDTreeToggle')
+end, { noremap = true, silent = true, desc = 'Toggle NERDTree' })
+
 -- vim-test
 vim.cmd([[let test#strategy = "neovim"]])
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>')
@@ -292,8 +426,6 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = function() pcall(vim.treesitter.start) end,
 })
 
--- NERDTree toggle
-vim.keymap.set('n', '<leader>nt', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>nf', ':NERDTreeFind<CR>', { noremap = true, silent = true })
 
 -- Set up FZF
