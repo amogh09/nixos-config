@@ -231,17 +231,32 @@ end, { desc = 'Tmux session picker' })
 -- split with NERDTree: opening either closes the other, so only one sidebar
 -- occupies the column at a time.
 local tmux_sidebar_win = nil
+local tmux_sidebar_timer = nil
 -- Session name per displayed line, so <CR> never has to parse the rendered text
 -- and names containing spaces still resolve.
 local tmux_sidebar_names = {}
 
-local function tmux_sidebar_lines()
-  local out = vim.fn.systemlist([[tmux list-sessions -F '#{session_name}' 2>/dev/null]])
+-- The session list is cached because reading it costs a subprocess (~6ms), far
+-- more than a frame of animation is worth paying for ten times a second.
+local tmux_sidebar_sessions = {}
+
+local function tmux_sidebar_reload()
+  tmux_sidebar_sessions =
+    vim.fn.systemlist([[tmux list-sessions -F '#{session_name}' 2>/dev/null]])
+end
+
+-- Spinner frames for a session mid-turn. Idle sessions get blank padding of the
+-- same display width so names stay in one column.
+local tmux_spinner = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
+local tmux_spinner_frame = 1
+
+local function tmux_sidebar_lines(busy)
   tmux_sidebar_names = {}
-  if #out == 0 then return { '  no tmux sessions' } end
+  if #tmux_sidebar_sessions == 0 then return { '  no tmux sessions' } end
   local lines = {}
-  for i, name in ipairs(out) do
-    lines[i] = '  ' .. name
+  for i, name in ipairs(tmux_sidebar_sessions) do
+    local icon = busy[name] and tmux_spinner[tmux_spinner_frame] or ' '
+    lines[i] = icon .. ' ' .. name
     tmux_sidebar_names[i] = name
   end
   return lines
@@ -251,6 +266,31 @@ local tmux_sidebar_ns = vim.api.nvim_create_namespace('tmux_sidebar')
 -- Custom group, so no colorscheme defines it and the link survives a change of
 -- theme while resolving to that theme's Visual.
 vim.api.nvim_set_hl(0, 'TmuxSidebarActive', { link = 'Visual', default = true })
+
+-- Sessions whose Claude is mid-turn. claude-session-state.sh writes a marker per
+-- tmux session when a turn starts and removes it when the turn ends.
+--
+-- A marker can outlive the turn: interrupting mid-turn skips the end-of-turn hook.
+-- The cutoff is deliberately generous because a turn can think for a long time
+-- without touching a tool, and clearing a live session's marker early would be the
+-- worse error. Markers for sessions that no longer exist cost nothing, since only
+-- sessions tmux still lists are ever drawn.
+local tmux_busy_max_age = 30 * 60
+
+local function tmux_busy_sessions()
+  local dir = (vim.env.XDG_CACHE_HOME or (vim.env.HOME .. '/.cache')) .. '/claude-busy'
+  local busy = {}
+  local ok, iter = pcall(vim.fs.dir, dir)
+  if not ok then return busy end
+  local now = os.time()
+  for name, kind in iter do
+    if kind == 'file' then
+      local st = vim.uv.fs_stat(dir .. '/' .. name)
+      if st and now - st.mtime.sec < tmux_busy_max_age then busy[name] = true end
+    end
+  end
+  return busy
+end
 
 -- The session showing in the focused window, or in the window focused before the
 -- sidebar when the sidebar holds focus. Buffer names resolve against cwd, so the
@@ -266,12 +306,12 @@ end
 local function tmux_sidebar_render()
   if not (tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win)) then return end
   local buf = vim.api.nvim_win_get_buf(tmux_sidebar_win)
+  local busy = tmux_busy_sessions()
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, tmux_sidebar_lines())
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, tmux_sidebar_lines(busy))
   vim.bo[buf].modifiable = false
   vim.api.nvim_buf_clear_namespace(buf, tmux_sidebar_ns, 0, -1)
   local active = tmux_sidebar_active_name()
-  if not active then return end
   for i, name in ipairs(tmux_sidebar_names) do
     if name == active then
       vim.api.nvim_buf_set_extmark(buf, tmux_sidebar_ns, i - 1, 0,
@@ -315,6 +355,11 @@ local function tmux_sidebar_kill_session()
 end
 
 local function tmux_sidebar_close()
+  if tmux_sidebar_timer then
+    tmux_sidebar_timer:stop()
+    tmux_sidebar_timer:close()
+    tmux_sidebar_timer = nil
+  end
   if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
     vim.api.nvim_win_close(tmux_sidebar_win, true)
   end
@@ -337,7 +382,26 @@ local function tmux_sidebar_open()
   vim.keymap.set('n', 'q', tmux_sidebar_close, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<CR>', tmux_sidebar_open_session, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<C-d>', tmux_sidebar_kill_session, { buffer = buf, nowait = true })
+  tmux_sidebar_reload() -- the cache is empty until the first tick would fill it
   tmux_sidebar_render()
+  -- Busy state changes while you sit in one window, where no autocmd fires, and a
+  -- spinner needs a frame roughly every 100ms. Only the session list is expensive,
+  -- so it is re-read once a second rather than every frame. Runs only while the
+  -- sidebar is up, and stops itself if the window goes away by some route other
+  -- than tmux_sidebar_close, such as :q or closing the tab.
+  local tick = 0
+  tmux_sidebar_timer = vim.uv.new_timer()
+  tmux_sidebar_timer:start(100, 100, function()
+    vim.schedule(function()
+      if not (tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win)) then
+        return tmux_sidebar_close()
+      end
+      tick = tick + 1
+      tmux_spinner_frame = tmux_spinner_frame % #tmux_spinner + 1
+      if tick % 10 == 0 then tmux_sidebar_reload() end
+      tmux_sidebar_render()
+    end)
+  end)
 end
 
 vim.keymap.set('n', '<leader>ts', function()
