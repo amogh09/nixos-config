@@ -266,6 +266,7 @@ local tmux_sidebar_ns = vim.api.nvim_create_namespace('tmux_sidebar')
 -- Custom group, so no colorscheme defines it and the link survives a change of
 -- theme while resolving to that theme's Visual.
 vim.api.nvim_set_hl(0, 'TmuxSidebarActive', { link = 'Visual', default = true })
+vim.api.nvim_set_hl(0, 'TmuxSidebarTitle', { link = 'Title', default = true })
 
 -- Sessions whose Claude is mid-turn. claude-session-state.sh writes a marker per
 -- tmux session when a turn starts and removes it when the turn ends.
@@ -379,6 +380,9 @@ local function tmux_sidebar_open()
   vim.wo[tmux_sidebar_win].relativenumber = false
   vim.wo[tmux_sidebar_win].wrap = false
   vim.wo[tmux_sidebar_win].winfixwidth = true
+  -- A winbar rather than a first buffer line, so line numbers stay one-to-one with
+  -- tmux_sidebar_names and <CR> still resolves the session under the cursor.
+  vim.wo[tmux_sidebar_win].winbar = '%#TmuxSidebarTitle# TMUX SESSIONS'
   vim.keymap.set('n', 'q', tmux_sidebar_close, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<CR>', tmux_sidebar_open_session, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<C-d>', tmux_sidebar_kill_session, { buffer = buf, nowait = true })
