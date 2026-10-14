@@ -382,7 +382,7 @@ local function tmux_sidebar_open()
   vim.wo[tmux_sidebar_win].winfixwidth = true
   -- A winbar rather than a first buffer line, so line numbers stay one-to-one with
   -- tmux_sidebar_names and <CR> still resolves the session under the cursor.
-  vim.wo[tmux_sidebar_win].winbar = '%#TmuxSidebarTitle# TMUX SESSIONS'
+  vim.wo[tmux_sidebar_win].winbar = '%#TmuxSidebarTitle# SESSIONS'
   vim.keymap.set('n', 'q', tmux_sidebar_close, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<CR>', tmux_sidebar_open_session, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<C-d>', tmux_sidebar_kill_session, { buffer = buf, nowait = true })
