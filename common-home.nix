@@ -178,7 +178,6 @@
     curl
     unixtools.netstat
     fd
-    lua-language-server
     nixd
     wget
     tmux
