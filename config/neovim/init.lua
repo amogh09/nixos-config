@@ -227,205 +227,189 @@ vim.keymap.set('n', '<leader>tm', function()
   }):find()
 end, { desc = 'Tmux session picker' })
 
--- Tmux session sidebar — a read-only listing of tmux sessions in a left split,
+-- Claude session sidebar — a read-only listing of the registry in a left split,
 -- with the session showing in the focused window highlighted. Shares the left
 -- split with NERDTree: opening either closes the other, so only one sidebar
 -- occupies the column at a time.
-local tmux_sidebar_win = nil
-local tmux_sidebar_timer = nil
+local claude_sidebar_win = nil
+local claude_sidebar_timer = nil
 -- Session name per displayed line, so <CR> never has to parse the rendered text
 -- and names containing spaces still resolve.
-local tmux_sidebar_names = {}
+local claude_sidebar_names = {}
 
--- The session list is cached because reading it costs a subprocess (~6ms), far
--- more than a frame of animation is worth paying for ten times a second.
-local tmux_sidebar_sessions = {}
+-- The row list is cached because reading it touches the registry and one file
+-- per running session, more work than a frame of animation is worth paying for
+-- ten times a second.
+local claude_sidebar_rows = {}
 
-local function tmux_sidebar_reload()
-  tmux_sidebar_sessions =
-    vim.fn.systemlist([[tmux list-sessions -F '#{session_name}' 2>/dev/null]])
+local function claude_sidebar_reload()
+  claude_sidebar_rows = require('claude').rows()
 end
 
--- Spinner frames for a session mid-turn. Idle sessions get blank padding of the
--- same display width so names stay in one column.
-local tmux_spinner = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
-local tmux_spinner_frame = 1
+-- Spinner frames for a session mid-turn. Every other glyph is one cell wide too,
+-- so names stay in one column.
+local claude_spinner = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
+local claude_spinner_frame = 1
 
-local function tmux_sidebar_lines(busy)
-  tmux_sidebar_names = {}
-  if #tmux_sidebar_sessions == 0 then return { '  no tmux sessions' } end
+-- A dormant row is marked because opening it costs a resume rather than a buffer
+-- switch, which is slow enough to want warning of.
+local function claude_sidebar_glyph(row)
+  if not row.live then return '·' end
+  if row.status == 'busy' then return claude_spinner[claude_spinner_frame] end
+  return ' '
+end
+
+local function claude_sidebar_lines()
+  claude_sidebar_names = {}
+  if #claude_sidebar_rows == 0 then return { '  no claude sessions' } end
   local lines = {}
-  for i, name in ipairs(tmux_sidebar_sessions) do
-    local icon = busy[name] and tmux_spinner[tmux_spinner_frame] or ' '
-    lines[i] = icon .. ' ' .. name
-    tmux_sidebar_names[i] = name
+  for i, row in ipairs(claude_sidebar_rows) do
+    lines[i] = claude_sidebar_glyph(row) .. ' ' .. row.name
+    claude_sidebar_names[i] = row.name
   end
   return lines
 end
 
-local tmux_sidebar_ns = vim.api.nvim_create_namespace('tmux_sidebar')
+local claude_sidebar_ns = vim.api.nvim_create_namespace('claude_sidebar')
 -- Custom group, so no colorscheme defines it and the link survives a change of
 -- theme while resolving to that theme's Visual.
-vim.api.nvim_set_hl(0, 'TmuxSidebarActive', { link = 'Visual', default = true })
-vim.api.nvim_set_hl(0, 'TmuxSidebarTitle', { link = 'Title', default = true })
-
--- Sessions whose Claude is mid-turn. claude-session-state.sh writes a marker per
--- tmux session when a turn starts and removes it when the turn ends.
---
--- A marker can outlive the turn: interrupting mid-turn skips the end-of-turn hook.
--- The cutoff is deliberately generous because a turn can think for a long time
--- without touching a tool, and clearing a live session's marker early would be the
--- worse error. Markers for sessions that no longer exist cost nothing, since only
--- sessions tmux still lists are ever drawn.
-local tmux_busy_max_age = 30 * 60
-
-local function tmux_busy_sessions()
-  local dir = (vim.env.XDG_CACHE_HOME or (vim.env.HOME .. '/.cache')) .. '/claude-busy'
-  local busy = {}
-  local ok, iter = pcall(vim.fs.dir, dir)
-  if not ok then return busy end
-  local now = os.time()
-  for name, kind in iter do
-    if kind == 'file' then
-      local st = vim.uv.fs_stat(dir .. '/' .. name)
-      if st and now - st.mtime.sec < tmux_busy_max_age then busy[name] = true end
-    end
-  end
-  return busy
-end
+vim.api.nvim_set_hl(0, 'ClaudeSidebarActive', { link = 'Visual', default = true })
+vim.api.nvim_set_hl(0, 'ClaudeSidebarTitle', { link = 'Title', default = true })
 
 -- The session showing in the focused window, or in the window focused before the
 -- sidebar when the sidebar holds focus. Buffer names resolve against cwd, so the
--- `tmux:` prefix sits after the last path separator.
-local function tmux_sidebar_active_name()
+-- `claude:` prefix sits after the last path separator.
+local function claude_sidebar_active_name()
   local win = vim.api.nvim_get_current_win()
-  if win == tmux_sidebar_win then win = vim.fn.win_getid(vim.fn.winnr('#')) end
+  if win == claude_sidebar_win then win = vim.fn.win_getid(vim.fn.winnr('#')) end
   if win == 0 or not vim.api.nvim_win_is_valid(win) then return nil end
   local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
-  return bufname:match('tmux:(.+)$')
+  return bufname:match('claude:(.+)$')
 end
 
-local function tmux_sidebar_render()
-  if not (tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win)) then return end
-  local buf = vim.api.nvim_win_get_buf(tmux_sidebar_win)
-  local busy = tmux_busy_sessions()
+local function claude_sidebar_render()
+  if not (claude_sidebar_win and vim.api.nvim_win_is_valid(claude_sidebar_win)) then return end
+  local buf = vim.api.nvim_win_get_buf(claude_sidebar_win)
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, tmux_sidebar_lines(busy))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, claude_sidebar_lines())
   vim.bo[buf].modifiable = false
-  vim.api.nvim_buf_clear_namespace(buf, tmux_sidebar_ns, 0, -1)
-  local active = tmux_sidebar_active_name()
-  for i, name in ipairs(tmux_sidebar_names) do
+  vim.api.nvim_buf_clear_namespace(buf, claude_sidebar_ns, 0, -1)
+  local active = claude_sidebar_active_name()
+  for i, name in ipairs(claude_sidebar_names) do
     if name == active then
-      vim.api.nvim_buf_set_extmark(buf, tmux_sidebar_ns, i - 1, 0,
-        { line_hl_group = 'TmuxSidebarActive' })
+      vim.api.nvim_buf_set_extmark(buf, claude_sidebar_ns, i - 1, 0,
+        { line_hl_group = 'ClaudeSidebarActive' })
     end
   end
 end
 
 -- Open the session under the cursor in the window used before the sidebar, so
--- the sidebar survives. Reuses an existing :Tmux buffer rather than reattaching.
-local function tmux_sidebar_open_session()
-  local name = tmux_sidebar_names[vim.fn.line('.')]
+-- the sidebar survives. Reuses an existing :Claude buffer rather than resuming
+-- a conversation a terminal already holds.
+local function claude_sidebar_open_session()
+  local name = claude_sidebar_names[vim.fn.line('.')]
   if not name then return end
   local prev = vim.fn.win_getid(vim.fn.winnr('#'))
-  if prev ~= 0 and prev ~= tmux_sidebar_win and vim.api.nvim_win_is_valid(prev) then
+  if prev ~= 0 and prev ~= claude_sidebar_win and vim.api.nvim_win_is_valid(prev) then
     vim.api.nvim_set_current_win(prev)
   else
     -- Sidebar is the only window; make one beside it and keep its width.
     vim.cmd('rightbelow vsplit')
-    if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
-      vim.api.nvim_win_set_width(tmux_sidebar_win, 32)
+    if claude_sidebar_win and vim.api.nvim_win_is_valid(claude_sidebar_win) then
+      vim.api.nvim_win_set_width(claude_sidebar_win, 32)
     end
   end
-  local existing = vim.fn.bufnr('tmux:' .. name)
+  local existing = vim.fn.bufnr('claude:' .. name)
   if existing ~= -1 then
     vim.cmd('buffer ' .. existing)
   else
-    vim.cmd('Tmux ' .. name)
+    vim.cmd('Claude ' .. name)
   end
-  -- Deferred: :Tmux renames the buffer and swaps the alternate after the events
+  -- Deferred: :Claude renames the buffer and swaps the alternate after the events
   -- a render would ride on, so re-read once that has settled.
-  vim.schedule(tmux_sidebar_render)
+  vim.schedule(claude_sidebar_render)
 end
 
--- Kill the session under the cursor. :TmuxKill also wipes its buffer.
-local function tmux_sidebar_kill_session()
-  local name = tmux_sidebar_names[vim.fn.line('.')]
+-- Drop the row under the cursor from the registry. :ClaudeForget also wipes its
+-- buffer; the conversation stays on disk.
+local function claude_sidebar_forget_session()
+  local name = claude_sidebar_names[vim.fn.line('.')]
   if not name then return end
-  vim.cmd('TmuxKill ' .. name)
-  tmux_sidebar_render()
+  vim.cmd('ClaudeForget ' .. name)
+  claude_sidebar_reload()
+  claude_sidebar_render()
 end
 
-local function tmux_sidebar_close()
-  if tmux_sidebar_timer then
-    tmux_sidebar_timer:stop()
-    tmux_sidebar_timer:close()
-    tmux_sidebar_timer = nil
+local function claude_sidebar_close()
+  if claude_sidebar_timer then
+    claude_sidebar_timer:stop()
+    claude_sidebar_timer:close()
+    claude_sidebar_timer = nil
   end
-  if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
-    vim.api.nvim_win_close(tmux_sidebar_win, true)
+  if claude_sidebar_win and vim.api.nvim_win_is_valid(claude_sidebar_win) then
+    vim.api.nvim_win_close(claude_sidebar_win, true)
   end
-  tmux_sidebar_win = nil
+  claude_sidebar_win = nil
 end
 
-local function tmux_sidebar_open()
+local function claude_sidebar_open()
   vim.cmd('NERDTreeClose') -- no-op when closed; keeps one sidebar in the column
   vim.cmd('topleft vsplit')
-  tmux_sidebar_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_width(tmux_sidebar_win, 32)
+  claude_sidebar_win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_width(claude_sidebar_win, 32)
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_win_set_buf(tmux_sidebar_win, buf)
-  vim.bo[buf].filetype = 'tmuxsessions'
+  vim.api.nvim_win_set_buf(claude_sidebar_win, buf)
+  vim.bo[buf].filetype = 'claudesessions'
   vim.bo[buf].buftype = 'nofile'
-  vim.wo[tmux_sidebar_win].number = false
-  vim.wo[tmux_sidebar_win].relativenumber = false
-  vim.wo[tmux_sidebar_win].wrap = false
-  vim.wo[tmux_sidebar_win].winfixwidth = true
+  vim.wo[claude_sidebar_win].number = false
+  vim.wo[claude_sidebar_win].relativenumber = false
+  vim.wo[claude_sidebar_win].wrap = false
+  vim.wo[claude_sidebar_win].winfixwidth = true
   -- A winbar rather than a first buffer line, so line numbers stay one-to-one with
-  -- tmux_sidebar_names and <CR> still resolves the session under the cursor.
-  vim.wo[tmux_sidebar_win].winbar = '%#TmuxSidebarTitle# SESSIONS'
-  vim.keymap.set('n', 'q', tmux_sidebar_close, { buffer = buf, nowait = true })
-  vim.keymap.set('n', '<CR>', tmux_sidebar_open_session, { buffer = buf, nowait = true })
-  vim.keymap.set('n', '<C-d>', tmux_sidebar_kill_session, { buffer = buf, nowait = true })
-  tmux_sidebar_reload() -- the cache is empty until the first tick would fill it
-  tmux_sidebar_render()
-  -- Busy state changes while you sit in one window, where no autocmd fires, and a
-  -- spinner needs a frame roughly every 100ms. Only the session list is expensive,
+  -- claude_sidebar_names and <CR> still resolves the session under the cursor.
+  vim.wo[claude_sidebar_win].winbar = '%#ClaudeSidebarTitle# SESSIONS'
+  vim.keymap.set('n', 'q', claude_sidebar_close, { buffer = buf, nowait = true })
+  vim.keymap.set('n', '<CR>', claude_sidebar_open_session, { buffer = buf, nowait = true })
+  vim.keymap.set('n', '<C-d>', claude_sidebar_forget_session, { buffer = buf, nowait = true })
+  claude_sidebar_reload() -- the cache is empty until the first tick would fill it
+  claude_sidebar_render()
+  -- Session state changes while you sit in one window, where no autocmd fires, and
+  -- a spinner needs a frame roughly every 100ms. Only the row list is expensive,
   -- so it is re-read once a second rather than every frame. Runs only while the
   -- sidebar is up, and stops itself if the window goes away by some route other
-  -- than tmux_sidebar_close, such as :q or closing the tab.
+  -- than claude_sidebar_close, such as :q or closing the tab.
   local tick = 0
-  tmux_sidebar_timer = vim.uv.new_timer()
-  tmux_sidebar_timer:start(100, 100, function()
+  claude_sidebar_timer = vim.uv.new_timer()
+  claude_sidebar_timer:start(100, 100, function()
     vim.schedule(function()
-      if not (tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win)) then
-        return tmux_sidebar_close()
+      if not (claude_sidebar_win and vim.api.nvim_win_is_valid(claude_sidebar_win)) then
+        return claude_sidebar_close()
       end
       tick = tick + 1
-      tmux_spinner_frame = tmux_spinner_frame % #tmux_spinner + 1
-      if tick % 10 == 0 then tmux_sidebar_reload() end
-      tmux_sidebar_render()
+      claude_spinner_frame = claude_spinner_frame % #claude_spinner + 1
+      if tick % 10 == 0 then claude_sidebar_reload() end
+      claude_sidebar_render()
     end)
   end)
 end
 
 vim.keymap.set('n', '<leader>ts', function()
-  if tmux_sidebar_win and vim.api.nvim_win_is_valid(tmux_sidebar_win) then
-    tmux_sidebar_close()
+  if claude_sidebar_win and vim.api.nvim_win_is_valid(claude_sidebar_win) then
+    claude_sidebar_close()
   else
-    tmux_sidebar_open()
+    claude_sidebar_open()
   end
-end, { desc = 'Toggle tmux session sidebar' })
+end, { desc = 'Toggle claude session sidebar' })
 
--- tmux state changes outside nvim, so re-read on the events that mean "back here".
--- BufEnter also keeps the active-session highlight current when a window's buffer
--- changes without the window itself changing.
+-- Sessions start and finish outside nvim, so re-read on the events that mean
+-- "back here". BufEnter also keeps the active-session highlight current when a
+-- window's buffer changes without the window itself changing.
 vim.api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter' },
-  { callback = tmux_sidebar_render })
+  { callback = claude_sidebar_render })
 
 -- NERDTree takes the same column, so close the sidebar when it opens
 vim.keymap.set('n', '<leader>nt', function()
-  tmux_sidebar_close()
+  claude_sidebar_close()
   vim.cmd('NERDTreeToggle')
 end, { noremap = true, silent = true, desc = 'Toggle NERDTree' })
 
@@ -488,7 +472,8 @@ vim.api.nvim_create_autocmd("BufNewFile", {
   callback = add_go_header,
 })
 
-require('lsp') -- Setup LSP
+require('lsp')    -- Setup LSP
+require('claude') -- :Claude / :ClaudeForget session terminals
 
 -- Treesitter — enable highlighting for all buffers with a parser
 vim.api.nvim_create_autocmd('FileType', {
