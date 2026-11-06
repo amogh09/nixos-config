@@ -330,6 +330,16 @@ local function claude_sidebar_open_session()
   vim.schedule(claude_sidebar_render)
 end
 
+-- End the process behind the row under the cursor, leaving the row in place so
+-- it reads as dormant and <CR> resumes it.
+local function claude_sidebar_stop_session()
+  local name = claude_sidebar_names[vim.fn.line('.')]
+  if not name then return end
+  vim.cmd('ClaudeStop ' .. name)
+  claude_sidebar_reload()
+  claude_sidebar_render()
+end
+
 -- Drop the row under the cursor from the registry. :ClaudeForget also wipes its
 -- buffer; the conversation stays on disk.
 local function claude_sidebar_forget_session()
@@ -370,6 +380,7 @@ local function claude_sidebar_open()
   vim.wo[claude_sidebar_win].winbar = '%#ClaudeSidebarTitle# SESSIONS'
   vim.keymap.set('n', 'q', claude_sidebar_close, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<CR>', claude_sidebar_open_session, { buffer = buf, nowait = true })
+  vim.keymap.set('n', 'x', claude_sidebar_stop_session, { buffer = buf, nowait = true })
   vim.keymap.set('n', '<C-d>', claude_sidebar_forget_session, { buffer = buf, nowait = true })
   claude_sidebar_reload() -- the cache is empty until the first tick would fill it
   claude_sidebar_render()

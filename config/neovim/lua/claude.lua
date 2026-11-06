@@ -34,7 +34,12 @@ local function live_by_session_id()
     local ok, lines = pcall(vim.fn.readfile, path)
     if ok then
       local parsed_ok, s = pcall(vim.json.decode, table.concat(lines, '\n'))
-      if parsed_ok and type(s) == 'table' and s.sessionId then live[s.sessionId] = s end
+      -- A session file outlives its process if the process died without
+      -- clearing it, so the pid decides whether the row is really live.
+      if parsed_ok and type(s) == 'table' and s.sessionId
+        and s.pid and vim.fn.isdirectory('/proc/' .. s.pid) == 1 then
+        live[s.sessionId] = s
+      end
     end
   end
   return live
@@ -103,6 +108,36 @@ vim.api.nvim_create_user_command('Claude', function(opts)
   end
 end, { nargs = 1, complete = complete })
 
+-- End the session's process by wiping its terminal buffer, keeping its registry
+-- row so it can be resumed. A session holds a few hundred megabytes while it
+-- runs, which is reason enough to close one you are done with for now.
+-- Ctrl+D twice is Claude's own exit, which flushes the transcript and runs its
+-- end-of-session hooks. Wiping the buffer kills the job outright, so that is
+-- held back for a session that does not take the hint.
+local function stop_buffer(name)
+  local buf = vim.fn.bufnr('claude:' .. name)
+  if buf == -1 then return false end
+
+  local chan = vim.bo[buf].channel
+  if chan and chan > 0 then
+    pcall(vim.api.nvim_chan_send, chan, '\4\4')
+  end
+  vim.defer_fn(function()
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+  end, 1500)
+  return true
+end
+
+vim.api.nvim_create_user_command('ClaudeStop', function(opts)
+  local name = opts.args
+  if not stop_buffer(name) then
+    return vim.notify(name .. ' has no open buffer', vim.log.levels.WARN)
+  end
+  print('Stopped claude session: ' .. name)
+end, { nargs = 1, complete = complete })
+
 -- Drop a name from the registry and wipe its buffer. The conversation itself
 -- survives on disk; `claude --resume <id>` still reaches it.
 vim.api.nvim_create_user_command('ClaudeForget', function(opts)
@@ -111,8 +146,7 @@ vim.api.nvim_create_user_command('ClaudeForget', function(opts)
   if not entries[name] then
     return vim.notify('no registry entry named ' .. name, vim.log.levels.WARN)
   end
-  local buf = vim.fn.bufnr('claude:' .. name)
-  if buf ~= -1 then vim.api.nvim_buf_delete(buf, { force = true }) end
+  stop_buffer(name)
   print('Forgot claude session: ' .. name .. ' (' .. entries[name].sessionId .. ')')
   entries[name] = nil
   write_registry(entries)
